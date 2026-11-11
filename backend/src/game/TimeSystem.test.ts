@@ -93,4 +93,3 @@ const day21 = {
 assert.throws(() => advanceDay(day21));
 
 console.log("TimeSystem 所有測試通過！");
-
