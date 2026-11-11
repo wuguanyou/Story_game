@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
+    "dev": "tsx watch src/server.js",
+    "start": "tsx src/server.js",
+    "test": "tsx --test \"src/game/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
