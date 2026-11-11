@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { Router } from "express";
 import { createInitialGameState } from "./GameState.js";
 import {
-  advanceStoryDay, currentStoryNode, getAvailableChoices, selectStoryChoice,
+  advanceStoryDay, currentStoryNode, finishDepth, selectStoryChoice, storyChoices,
   type CompiledStory, type StoryProgress
 } from "./StorySystem.js";
 
@@ -15,9 +15,11 @@ export function gameRoutes(story?: CompiledStory) {
     return {
       id, revision: session.revision, game: session.progress.game,
       pendingDepth: session.progress.pendingDepth,
+      activeDepth: session.progress.activeDepth?.patient ?? null,
+      canFinishDepth: Boolean(session.progress.activeDepth && node.choices.length === 0),
       node: {
         id: node.id, text: node.text,
-        choices: getAvailableChoices(session.progress.game, node)
+        choices: storyChoices(story!, session.progress)
           .map(({ id, label }) => ({ id, label }))
       }
     };
@@ -48,7 +50,7 @@ export function gameRoutes(story?: CompiledStory) {
     if (!session) return res.status(404).json({ error: "game_not_found" });
     const { revision, type, choiceId } = req.body ?? {};
     if (!Number.isSafeInteger(revision) ||
-        (type !== "choose" && type !== "advanceDay") ||
+        (type !== "choose" && type !== "advanceDay" && type !== "finishDepth") ||
         (type === "choose" && (typeof choiceId !== "string" || !choiceId.trim()))) {
       return res.status(400).json({ error: "invalid_action" });
     }
@@ -59,13 +61,16 @@ export function gameRoutes(story?: CompiledStory) {
     if (type === "choose") {
       progress = selectStoryChoice(story!, session.progress, choiceId);
       if (!progress) return res.status(409).json({ error: "choice_unavailable" });
+    } else if (type === "finishDepth") {
+      progress = finishDepth(story!, session.progress);
+      if (!progress) return res.status(409).json({ error: "depth_unavailable" });
     } else {
-      if (session.progress.game.ap > 0 || session.progress.game.day >= 21 ||
+      if (session.progress.activeDepth || session.progress.game.ap > 0 || session.progress.game.day >= 21 ||
           (session.progress.game.day === 15 &&
             !session.progress.game.flags.includes("day15_event_completed"))) {
         return res.status(409).json({ error: "day_unavailable" });
       }
-      progress = advanceStoryDay(session.progress);
+      progress = advanceStoryDay(session.progress, story);
     }
     const updated = { revision: revision + 1, progress };
     const response = view(req.params.id, updated);

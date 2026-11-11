@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
+import { fileURLToPath } from "node:url";
+import { loadStory } from "./loadStory.js";
 import { test } from "node:test";
 import express from "express";
 import { demoStory } from "./DemoStory.js";
@@ -32,6 +34,53 @@ test("建立進度、扣除 AP、拒絕重送並讀回進度", async () => {
     assert.equal((await rejected.json()).error, "stale_revision");
     const read = await fetch(url);
     assert.equal((await read.json()).game.ap, 4);
+  } finally {
+    server.close();
+  }
+});
+
+test("從外部劇情 JSON 建立遊戲並透過 API 完成隔日深度劇情", async () => {
+  const path = fileURLToPath(new URL("../../stories/depth.example.json", import.meta.url));
+  const app = express();
+  app.use(express.json());
+  app.use("/api/games", gameRoutes(loadStory(path)));
+  const server = app.listen(0, "127.0.0.1");
+  try {
+    await once(server, "listening");
+    const address = server.address();
+    assert(address && typeof address !== "string");
+    const root = `http://127.0.0.1:${address.port}/api/games`;
+    const created = await fetch(root, { method: "POST" });
+    assert.equal(created.status, 201);
+    let state = await created.json();
+    const url = `${root}/${state.id}`;
+    const send = (type: string, choiceId?: string) => fetch(`${url}/actions`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, choiceId, revision: state.revision })
+    });
+    async function act(type: string, choiceId?: string) {
+      const response = await send(type, choiceId);
+      assert.equal(response.status, 200);
+      state = await response.json();
+    }
+    for (let day = 1; day <= 4; day++) {
+      for (let ap = 0; ap < 5; ap++) {
+        await act("choose", day === 4 && ap === 4 ? "cross_threshold" : "practice");
+      }
+      await act("advanceDay");
+    }
+    assert.equal(state.game.day, 5);
+    assert.equal(state.node.id, "depth_a");
+    assert.equal(state.activeDepth, "A");
+    assert.equal((await send("finishDepth")).status, 409);
+    await act("choose", "continue");
+    assert.equal(state.canFinishDepth, true);
+    await act("finishDepth");
+    assert.equal(state.activeDepth, null);
+    assert.equal(state.node.id, "daily");
+    assert.equal(state.game.ap, 5);
+    assert.deepEqual(state.pendingDepth, {});
+    assert.equal((await send("finishDepth")).status, 409);
   } finally {
     server.close();
   }

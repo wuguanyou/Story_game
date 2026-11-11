@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { loadStory } from './game/loadStory.js';
 import express from 'express';
 import { gameRoutes } from './game/GameRoutes.js';
 import { compileStory } from './game/StorySystem.js';
@@ -12,7 +13,10 @@ app.use(express.json({ limit: '100kb' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', service: 'interactive-story-api' }));
 app.get('/api/version', (_req, res) => res.json({ name: 'Interactive Story Starter', version: '0.1.0' }));
 
-app.use('/api/games', gameRoutes(process.env.ENABLE_GAME_DEMO === '1' ? compileStory(demoStory) : undefined));
+const storyFile = process.env.GAME_STORY_FILE;
+const story = storyFile ? loadStory(storyFile)
+  : process.env.ENABLE_GAME_DEMO === '1' ? compileStory(demoStory) : undefined;
+app.use('/api/games', gameRoutes(story));
 app.use('/api', (_req, res) => res.status(404).json({ error: 'API route not found' }));
 app.use((error, _req, res, _next) => {
   if (error.type === 'entity.parse.failed') return res.status(400).json({ error: 'invalid_json' });

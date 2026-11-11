@@ -1,0 +1,27 @@
+{
+  "start": "daily",
+  "depthStarts": { "A": "depth_a" },
+  "nodes": [
+    {
+      "id": "daily",
+      "text": "每日互動測試。",
+      "choices": [
+        { "id": "practice", "label": "測試互動", "next": "daily", "action": "interaction" },
+        {
+          "id": "cross_threshold",
+          "label": "測試超過信任門檻",
+          "next": "daily",
+          "action": "interaction",
+          "condition": { "type": "day", "value": 4 },
+          "effect": { "patient": { "id": "A", "trust": 51 } }
+        }
+      ]
+    },
+    {
+      "id": "depth_a",
+      "text": "病患 A 的深度劇情測試。",
+      "choices": [{ "id": "continue", "label": "繼續", "next": "depth_end", "action": "dialogue" }]
+    },
+    { "id": "depth_end", "text": "測試完成。", "choices": [] }
+  ]
+}

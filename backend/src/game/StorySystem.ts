@@ -1,5 +1,6 @@
 
-import type { GameState } from "./GameState.js";
+import type { GameState, PatientId } from "./GameState.js";
+import { validateStoryData } from "./StoryValidation.js";
 
 import type { EventCondition } from "./EventConditions.js";
 
@@ -21,15 +22,20 @@ export interface StoryChoice {
 export interface StoryDefinition {
   start: string;
   nodes: readonly StoryNode[];
+  depthStarts?: Partial<Record<PatientId, string>>;
 }
 
 export interface StoryProgress {
   node: string;
   game: GameState;
   pendingDepth: Partial<Record<"A" | "B" | "C", number>>;
+  activeDepth?: { patient: PatientId; resumeNode: string };
+  completedDepth?: PatientId[];
 }
 
-export function compileStory(definition: StoryDefinition) {
+export function compileStory(input: unknown) {
+  validateStoryData(input);
+  const definition = input;
   const nodes = new Map<string, StoryNode>();
   for (const node of definition.nodes) {
     if (!node.id.trim() || nodes.has(node.id)) throw new Error("劇情節點 ID 無效或重複");
@@ -47,7 +53,42 @@ export function compileStory(definition: StoryDefinition) {
       ids.add(choice.id);
     }
   }
-  return { start: definition.start, nodes };
+  for (const start of Object.values(definition.depthStarts ?? {})) {
+    if (!nodes.has(start)) throw new Error(`找不到深度劇情節點：${start}`);
+    const visited = new Set<string>();
+    const queue = [start];
+    const endings: string[] = [];
+    const predecessors = new Map<string, string[]>();
+    while (queue.length) {
+      const id = queue.pop()!;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      const node = nodes.get(id)!;
+      if (node.choices.length === 0) endings.push(id);
+      for (const choice of node.choices) {
+        if (choice.action !== "dialogue") {
+          throw new Error(`深度劇情只能使用對話選項：${id}/${choice.id}`);
+        }
+        if (!choice.condition) {
+          const incoming = predecessors.get(choice.next) ?? [];
+          incoming.push(id);
+          predecessors.set(choice.next, incoming);
+        }
+        queue.push(choice.next);
+      }
+    }
+    const canEnd = new Set<string>();
+    while (endings.length) {
+      const id = endings.pop()!;
+      if (canEnd.has(id)) continue;
+      canEnd.add(id);
+      for (const previous of predecessors.get(id) ?? []) endings.push(previous);
+    }
+    for (const id of visited) {
+      if (!canEnd.has(id)) throw new Error(`深度劇情節點無法抵達結尾：${id} 缺少不受條件限制的路徑`);
+    }
+  }
+  return { start: definition.start, nodes, depthStarts: definition.depthStarts ?? {} };
 }
 
 export type CompiledStory = ReturnType<typeof compileStory>;
@@ -62,7 +103,7 @@ export function selectStoryChoice(
   story: CompiledStory, progress: StoryProgress, choiceId: string
 ): StoryProgress | undefined {
   const node = currentStoryNode(story, progress);
-  const choice = getAvailableChoices(progress.game, node).find(item => item.id === choiceId);
+  const choice = storyChoices(story, progress).find(item => item.id === choiceId);
   if (!choice) return undefined;
   if (!story.nodes.has(choice.next)) throw new Error("找不到目標節點");
 
@@ -75,17 +116,45 @@ export function selectStoryChoice(
     const after = game.patients[id];
     const crossed = (before.healing <= 50 && after.healing > 50)
       || (before.trust <= 50 && after.trust > 50);
-    if (crossed && game.day >= 4 && game.day <= 14) pendingDepth[id] ??= game.day + 1;
+    if (crossed && game.day >= 4 && game.day <= 14 && !progress.completedDepth?.includes(id)) {
+      pendingDepth[id] ??= game.day + 1;
+    }
   }
   return {
+    ...progress,
     node: choice.next,
     pendingDepth,
     game: { ...game, history: [...game.history, JSON.stringify([node.id, choice.id])] }
   };
 }
 
-export function advanceStoryDay(progress: StoryProgress): StoryProgress {
-  return { ...progress, game: advanceDay(progress.game) };
+export function storyChoices(story: CompiledStory, progress: StoryProgress): StoryChoice[] {
+  const choices = getAvailableChoices(progress.game, currentStoryNode(story, progress));
+  return progress.activeDepth ? choices.filter(choice => choice.action === "dialogue") : choices;
+}
+
+export function advanceStoryDay(progress: StoryProgress, story?: CompiledStory): StoryProgress {
+  if (progress.activeDepth) throw new Error("必須先完成深度劇情");
+  const game = advanceDay(progress.game);
+  const updated = { ...progress, game };
+  if (!story || game.day === 15) return updated;
+  const due = (["A", "B", "C"] as const).filter(id => progress.pendingDepth[id] === game.day);
+  if (due.length !== 1) return updated;
+  const patient = due[0];
+  const start = story.depthStarts[patient];
+  if (!start) return updated;
+  return { ...updated, node: start, activeDepth: { patient, resumeNode: progress.node } };
+}
+
+export function finishDepth(story: CompiledStory, progress: StoryProgress): StoryProgress | undefined {
+  const active = progress.activeDepth;
+  if (!active || currentStoryNode(story, progress).choices.length !== 0) return undefined;
+  const pendingDepth = { ...progress.pendingDepth };
+  delete pendingDepth[active.patient];
+  return {
+    ...progress, node: active.resumeNode, pendingDepth, activeDepth: undefined,
+    completedDepth: [...(progress.completedDepth ?? []), active.patient]
+  };
 }
 
 // 定義劇情節點
