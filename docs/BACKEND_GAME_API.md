@@ -10,9 +10,9 @@
 | --- | --- | --- |
 | POST | `/api/games` | 建立進度，回傳 201 |
 | GET | `/api/games/:id` | 讀取進度 |
-| POST | `/api/games/:id/actions` | 送出 `{ "type": "choose", "choiceId": "...", "revision": 0 }` 或 `{ "type": "advanceDay", "revision": 0 }` |
+| POST | `/api/games/:id/actions` | 送出 `{ "type": "choose", "choiceId": "...", "revision": 0 }` 、`{ "type": "advanceDay", "revision": 0 }` 或 `{ "type": "finishDepth", "revision": 0 }` |
 
-成功時回傳 `id`、`revision`、`game`、`pendingDepth` 與目前的 `node`。選項只回傳可用的 ID 與顯示文字。前端用回傳的最新版本號送下一個動作。收到 `409 stale_revision` 時先重新讀取，避免重送已執行的動作。不可用的選項或日期推進分別回傳 `409 choice_unavailable`、`409 day_unavailable`。
+成功時回傳 `id`、`revision`、`game`、`pendingDepth` 與目前的 `node`。選項只回傳可用的 ID 與顯示文字。前端用回傳的最新版本號送下一個動作。收到 `409 stale_revision` 時先重新讀取，避免重送已執行的動作。不可用的選項、日期推進或深度劇情完成分別回傳 `409 choice_unavailable`、`409 day_unavailable`、`409 depth_unavailable`；請求格式錯誤回傳 `400 invalid_action`，找不到進度回傳 `404 game_not_found`。
 
 原型以伺服器記憶體保存進度，最多 100 局，重啟即清除。示範暫以用完當天 AP 作為換日條件。前端現有示範畫面仍沿用自己的進度與存檔。
 
@@ -24,6 +24,6 @@
 
 第 4～14 天跨過 50 時會記入 `pendingDepth`。一般日期換日後，若只有一位病患當天到期且已配置入口，API 會進入該劇情並回傳 `activeDepth`（病患 ID）。深度劇情使用 `dialogue` 選項，不消耗 AP。到達沒有選項的節點時，`canFinishDepth` 為 true，可送出 `{ "type": "finishDepth", "revision": 目前版本號 }` 返回原節點，同一病患完成後不會重播。第 15 天與同日多位到期的排程保留在 `pendingDepth`，等待團隊決定順序。
 
-進入第 15 天會鎖定 MBTI。劇情可用 `lockedPreference` 條件檢查指定傾向是否嚴格高於相反傾向。同分時此條件不成立，正式人格同分規則仍待決定。劇情作者可指定 `finishCrisis` 選項標記強制事件完成，玩家完成後才能換日。引導腳本、正式危機劇情與成功門檻、結局評分和持久化存檔待確認。
+進入第 15 天會鎖定 MBTI。劇情可用 `lockedPreference` 條件檢查指定傾向是否嚴格高於相反傾向。同分時此條件不成立，正式人格同分規則仍待決定。第 15 天 AP 為 0，`interaction` 選項不會出現；`dialogue` 選項仍可使用，但不再累積 MBTI。劇情作者可指定 `finishCrisis` 選項標記強制事件完成。符合條件的 `finishCrisis` 選項只在第 15 天可用，強制事件只能完成一次，玩家完成後才能換日。引導腳本、正式危機劇情與成功門檻、結局評分和持久化存檔待確認。
 
 執行 `npm run typecheck --workspace backend` 與 `npm test --workspace backend` 驗證。
