@@ -14,7 +14,7 @@
 
 成功時回傳 `id`、`revision`、`game`、`pendingDepth` 與目前的 `node`。選項只回傳可用的 ID 與顯示文字。前端用回傳的最新版本號送下一個動作。收到 `409 stale_revision` 時先重新讀取，避免重送已執行的動作。不可用的選項、日期推進或深度劇情完成分別回傳 `409 choice_unavailable`、`409 day_unavailable`、`409 depth_unavailable`；請求格式錯誤回傳 `400 invalid_action`，找不到進度回傳 `404 game_not_found`。
 
-原型以伺服器記憶體保存進度，最多 100 局，重啟即清除。示範暫以用完當天 AP 作為換日條件。前端現有示範畫面仍沿用自己的進度與存檔。
+原型以伺服器記憶體保存進度，最多 100 局，重啟即清除。示範暫以用完當天 AP 作為換日條件。前端現有示範畫面仍沿用自己的進度與存檔；首頁的「後端測試模式」透過 `frontend/src/api/gameApi.js` 呼叫上述端點，進度只保存在 React 記憶體，重新整理頁面後需重新建立遊戲。收到 `409 stale_revision` 時會重新讀取最新狀態，不會自動重送動作。
 
 可在後端環境設定 `GAME_STORY_FILE` 指向劇情 JSON（建議使用絕對路徑）。載入時會檢查節點與選項 ID、跳轉目標、條件、效果和深度劇情入口，資料有誤時伺服器會在啟動階段報錯。JSON 包含 `start`、`nodes`，並可用 `depthStarts` 指定病患入口，例如 `{ "A": "patient_a_depth" }`。
 
