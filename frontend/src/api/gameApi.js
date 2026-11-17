@@ -38,22 +38,25 @@ async function request(path, options = {}) {
   return data;
 }
 
-export function createGame() {
-  return request('', { method: 'POST' });
+// signal 只用來停止等待回應；伺服器若已完成操作，取消請求並不會撤銷該操作。
+export function createGame({ signal } = {}) {
+  return request('', { method: 'POST', signal });
 }
 
-export function getGame(id) {
-  return request(`/${encodeURIComponent(id)}`);
+export function getGame(id, { signal } = {}) {
+  return request(`/${encodeURIComponent(id)}`, { signal });
 }
 
 /**
  * @param {string} id
  * @param {{ type: 'choose' | 'advanceDay' | 'finishDepth', revision: number, choiceId?: string }} action
+ * @param {{ signal?: AbortSignal }} [options]
  */
-export function sendAction(id, action) {
+export function sendAction(id, action, { signal } = {}) {
   return request(`/${encodeURIComponent(id)}/actions`, {
     method: 'POST',
     body: JSON.stringify(action),
+    signal,
   });
 }
 

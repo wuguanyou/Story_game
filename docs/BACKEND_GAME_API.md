@@ -26,4 +26,4 @@
 
 進入第 15 天會鎖定 MBTI。劇情可用 `lockedPreference` 條件檢查指定傾向是否嚴格高於相反傾向。同分時此條件不成立，正式人格同分規則仍待決定。第 15 天 AP 為 0，`interaction` 選項不會出現；`dialogue` 選項仍可使用，但不再累積 MBTI。劇情作者可指定 `finishCrisis` 選項標記強制事件完成。符合條件的 `finishCrisis` 選項只在第 15 天可用，強制事件只能完成一次，玩家完成後才能換日。引導腳本、正式危機劇情與成功門檻、結局評分和持久化存檔待確認。
 
-執行 `npm run typecheck --workspace backend` 與 `npm test --workspace backend` 驗證。
+執行 `npm run typecheck --workspace backend` 與 `npm test --workspace backend` 驗證。前端後端測試模式的回歸測試以 `npm test --workspace frontend` 執行。

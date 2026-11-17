@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, CheckCircle, Moon, Play, RefreshCw } from 'lucide-react';
 import { ApiError, createGame, describeApiError, getGame, sendAction } from '../api/gameApi.js';
 
@@ -6,25 +6,51 @@ const PATIENTS = ['A', 'B', 'C'];
 
 // 後端測試模式：畫面只呈現後端回傳的狀態，遊戲規則一律由後端判斷。
 // 進度只保存在 React 記憶體（由 App 持有），不寫入 localStorage。
-export default function BackendGame({ session, onSession, onExit }) {
+export default function BackendGame({ session, onSession, onExit, requestGeneration }) {
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
+  const controllerRef = useRef(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
-  // 同一時間只允許一個請求；用 ref 擋住同一輪 render 內的連點
-  async function run(task) {
+  // 離開畫面時讓尚未完成的請求全部失效。abort 只停止等待回應，
+  // 伺服器可能已完成該操作；是否套用回應一律由 generation 判斷。
+  useEffect(() => () => {
+    requestGeneration.current += 1;
+    controllerRef.current?.abort();
+  }, [requestGeneration]);
+
+  // 同一時間只允許一個請求；用 busyRef 擋住同一輪 render 內的連點。
+  // 每個請求記下開始時的 generation，只有 generation 未變時才能更新進度或訊息。
+  async function run(task, { invalidatePrevious = false } = {}) {
     if (busyRef.current) return;
+    if (invalidatePrevious) requestGeneration.current += 1;
+    const generation = requestGeneration.current;
+    const isCurrent = () => requestGeneration.current === generation;
+    const controller = new AbortController();
+    controllerRef.current = controller;
     busyRef.current = true;
     setBusy(true);
     setError('');
     setNotice('');
+    const context = {
+      signal: controller.signal,
+      isCurrent,
+      apply(view) {
+        if (isCurrent()) onSession(view);
+      },
+      notify(message) {
+        if (isCurrent()) setNotice(message);
+      },
+    };
     try {
-      await task();
+      await task(context);
     } catch (failure) {
+      if (!isCurrent()) return;
       if (failure instanceof ApiError && failure.code === 'game_not_found') onSession(null);
       setError(describeApiError(failure));
     } finally {
+      if (controllerRef.current === controller) controllerRef.current = null;
       busyRef.current = false;
       setBusy(false);
     }
@@ -32,24 +58,26 @@ export default function BackendGame({ session, onSession, onExit }) {
 
   function start() {
     if (session && !window.confirm('建立新遊戲？目前這局的後端進度不會保留在畫面上。')) return;
-    run(async () => onSession(await createGame()));
+    run(async ({ signal, apply }) => apply(await createGame({ signal })), { invalidatePrevious: true });
   }
 
   function refresh() {
     const { id } = session;
-    run(async () => onSession(await getGame(id)));
+    run(async ({ signal, apply }) => apply(await getGame(id, { signal })));
   }
 
   function act(type, choiceId) {
     const { id, revision } = session;
-    run(async () => {
+    const action = choiceId ? { type, choiceId, revision } : { type, revision };
+    run(async ({ signal, isCurrent, apply, notify }) => {
       try {
-        onSession(await sendAction(id, choiceId ? { type, choiceId, revision } : { type, revision }));
+        apply(await sendAction(id, action, { signal }));
       } catch (failure) {
         if (!(failure instanceof ApiError) || failure.code !== 'stale_revision') throw failure;
+        if (!isCurrent()) return;
         // 版本過期：只重新讀取最新狀態，不自動重送剛才的動作
-        onSession(await getGame(id));
-        setNotice(describeApiError(failure));
+        apply(await getGame(id, { signal }));
+        notify(describeApiError(failure));
       }
     });
   }
@@ -81,7 +109,15 @@ export default function BackendGame({ session, onSession, onExit }) {
   }
 
   const { game, node, activeDepth, canFinishDepth } = session;
-  const canAdvance = !busy && game.ap === 0 && !activeDepth;
+  // 換日按鈕只是提示，沿用後端已確定的條件；後端仍會再驗證
+  const lastDay = game.day >= 21;
+  const day15Pending = game.day === 15 && !game.flags.includes('day15_event_completed');
+  const canAdvance = !busy && game.ap === 0 && !activeDepth && !lastDay && !day15Pending;
+  const advanceHint = activeDepth ? null
+    : lastDay ? '已到最後一天，無法再換日'
+    : day15Pending ? '請先完成第 15 天強制事件'
+    : game.ap > 0 ? 'AP 用完後才能換日'
+    : null;
 
   return <main className="game-layout">{bar}
     <section className="backend-stats" aria-label="遊戲狀態">
@@ -112,7 +148,7 @@ export default function BackendGame({ session, onSession, onExit }) {
           <CheckCircle size={18}/> 完成深度劇情</button>}
         <button className="secondary" disabled={!canAdvance} onClick={() => act('advanceDay')}>
           <Moon size={18}/> 下一天</button>
-        {!activeDepth && game.ap > 0 && <small className="hint">AP 用完後才能換日</small>}
+        {advanceHint && <small className="hint">{advanceHint}</small>}
       </div>
     </section>
     {status}

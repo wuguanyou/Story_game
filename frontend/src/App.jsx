@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { BookOpen, Play, Save, Server, Users } from 'lucide-react';
 import Game from './components/Game.jsx';
 import BackendGame from './components/BackendGame.jsx';
@@ -21,6 +21,8 @@ export default function App() {
   const [apiStatus, setApiStatus] = useState('尚未測試');
   // 後端測試模式的進度只保存在 React 記憶體，不寫入 localStorage
   const [backendSession, setBackendSession] = useState(null);
+  // 後端請求的有效代數：離開後端畫面或建立新局時遞增，舊請求的回應不得覆蓋目前進度
+  const backendRequestGeneration = useRef(0);
   function choose(option) {
     if (!story[option.next]) { setMessage('找不到目標劇情節點，請檢查 next。'); return; }
     setProgress(p => ({ node: option.next, history: [...p.history, {from:p.node, next:option.next, label:option.label}] }));
@@ -37,7 +39,7 @@ export default function App() {
     try { const r = await fetch('/api/health'); if (!r.ok) throw Error('failed'); const data=await r.json(); setApiStatus(data.status==='ok'?'連線正常':'回應異常'); }
     catch { setApiStatus('無法連線（示範劇情仍可操作）'); }
   }
-  if (screen === 'backend') return <BackendGame session={backendSession} onSession={setBackendSession} onExit={() => setScreen('home')}/>;
+  if (screen === 'backend') return <BackendGame session={backendSession} onSession={setBackendSession} requestGeneration={backendRequestGeneration} onExit={() => setScreen('home')}/>;
   if (screen === 'game') return <Game progress={progress} onChoice={choose} onSave={save} onExit={() => setScreen('home')} onReset={reset} message={message}/>;
   return <div className="site"><header className="topbar"><div className="container topbar-inner"><div className="brand">互動劇情遊戲 <span>Project Starter</span></div><span className="status">主題討論中 · v0.2</span></div></header>
     <main className="container"><section className="intro"><div className="eyebrow">TEAM PROJECT / STORY GAME</div><h1>先把遊戲框架做好，<br/>故事由我們一起決定。</h1><p>可擴充的互動劇情網站基礎：將「劇情內容」和「遊戲呈現」分開，方便小組同時開發。目前所有場景與對話皆為中性示範資料。</p><div className="actions"><button className="primary" onClick={start}><Play size={18}/> 開始示範劇情</button><button className="secondary" onClick={resume}><BookOpen size={18}/> 讀取本機存檔</button><button className="secondary" onClick={() => setScreen('backend')}><Server size={18}/> 後端測試模式</button></div></section>
