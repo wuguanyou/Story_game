@@ -14,7 +14,7 @@
 
 成功時回傳 `id`、`revision`、`game`、`pendingDepth` 與目前的 `node`。選項只回傳可用的 ID 與顯示文字。前端用回傳的最新版本號送下一個動作。收到 `409 stale_revision` 時先重新讀取，避免重送已執行的動作。不可用的選項、日期推進或深度劇情完成分別回傳 `409 choice_unavailable`、`409 day_unavailable`、`409 depth_unavailable`；請求格式錯誤回傳 `400 invalid_action`，找不到進度回傳 `404 game_not_found`。
 
-原型以伺服器記憶體保存進度，最多 100 局，重啟即清除。示範暫以用完當天 AP 作為換日條件。前端現有示範畫面仍沿用自己的進度與存檔。
+原型以伺服器記憶體保存進度，最多 100 局，重啟即清除。示範暫以用完當天 AP 作為換日條件。前端現有示範畫面仍沿用自己的進度與存檔；首頁的「後端測試模式」透過 `frontend/src/api/gameApi.js` 呼叫上述端點，進度只保存在 React 記憶體，重新整理頁面後需重新建立遊戲。收到 `409 stale_revision` 時會重新讀取最新狀態，不會自動重送動作。
 
 可在後端環境設定 `GAME_STORY_FILE` 指向劇情 JSON（建議使用絕對路徑）。載入時會檢查節點與選項 ID、跳轉目標、條件、效果和深度劇情入口，資料有誤時伺服器會在啟動階段報錯。JSON 包含 `start`、`nodes`，並可用 `depthStarts` 指定病患入口，例如 `{ "A": "patient_a_depth" }`。
 
@@ -26,4 +26,4 @@
 
 進入第 15 天會鎖定 MBTI。劇情可用 `lockedPreference` 條件檢查指定傾向是否嚴格高於相反傾向。同分時此條件不成立，正式人格同分規則仍待決定。第 15 天 AP 為 0，`interaction` 選項不會出現；`dialogue` 選項仍可使用，但不再累積 MBTI。劇情作者可指定 `finishCrisis` 選項標記強制事件完成。符合條件的 `finishCrisis` 選項只在第 15 天可用，強制事件只能完成一次，玩家完成後才能換日。引導腳本、正式危機劇情與成功門檻、結局評分和持久化存檔待確認。
 
-執行 `npm run typecheck --workspace backend` 與 `npm test --workspace backend` 驗證。
+執行 `npm run typecheck --workspace backend` 與 `npm test --workspace backend` 驗證。前端後端測試模式的回歸測試以 `npm test --workspace frontend` 執行。
