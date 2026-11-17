@@ -16,8 +16,21 @@ const story = compileStory({
         effect: { patient: { id: "A", trust: 51 } } },
       { id: "crossB", label: "B 跨越門檻", next: "daily", action: "interaction",
         effect: { patient: { id: "B", healing: 51 } } },
+      { id: "setB50", label: "B 信任 +50", next: "daily", action: "interaction",
+        effect: { patient: { id: "B", trust: 50 } } },
       { id: "talk", label: "對話", next: "daily", action: "dialogue", effect: { mbti: { F: 1 } } },
+      { id: "chatB", label: "B 信任 +1 對話", next: "daily", action: "dialogue",
+        effect: { patient: { id: "B", trust: 1 } } },
+      { id: "goGarden", label: "前往花園", next: "garden", action: "dialogue" },
       { id: "crisis", label: "完成危機", next: "daily", action: "finishCrisis" }
+    ]
+  }, {
+    // 與 story.start 不同的日常節點，用來確認深度劇情結束後回到真正的原節點
+    id: "garden", text: "花園",
+    choices: [
+      { id: "practice", label: "練習", next: "garden", action: "interaction" },
+      { id: "crossA", label: "A 跨越門檻", next: "garden", action: "interaction",
+        effect: { patient: { id: "A", trust: 51 } } }
     ]
   }, {
     id: "depth_a", text: "A 深度",
@@ -28,7 +41,10 @@ const story = compileStory({
 interface GameView {
   id: string;
   revision: number;
-  game: { day: number; ap: number; mbtiLocked: boolean; mbti: Record<string, number>; flags: string[] };
+  game: {
+    day: number; ap: number; mbtiLocked: boolean; mbti: Record<string, number>; flags: string[];
+    patients: Record<string, { trust: number; healing: number }>;
+  };
   pendingDepth: Record<string, number>;
   activeDepth: string | null;
   canFinishDepth: boolean;
@@ -69,13 +85,17 @@ function createClient(root: string, initial: GameView) {
       state = await response.json();
       return state;
     },
-    async reject(status: number, error: string, type: string, choiceId?: string) {
-      const before = state.revision;
-      const response = await client.send(type, choiceId);
-      assert.equal(response.status, status);
+    /** 送出指定 body，確認被拒絕，並重新 GET 確認完整進度與最後一次成功回應相同 */
+    async rejectBody(status: number, error: string, body: unknown) {
+      const response = await raw(body);
+      assert.equal(response.status, status, JSON.stringify(body));
       assert.deepEqual(await response.json(), { error });
-      const read: GameView = await (await fetch(url)).json();
-      assert.equal(read.revision, before, "被拒絕的動作不能改變進度");
+      const read = await fetch(url);
+      assert.equal(read.status, 200);
+      assert.deepEqual(await read.json(), state, "被拒絕的動作不能改變進度");
+    },
+    async reject(status: number, error: string, type: string, choiceId?: string): Promise<void> {
+      await client.rejectBody(status, error, { type, choiceId, revision: state.revision });
     },
     /** 用完當天 AP 並換日；cross 依日期指定當天前幾次互動要選的選項 */
     async playUntil(day: number, cross: Partial<Record<number, string[]>> = {}) {
@@ -107,7 +127,23 @@ test("API：第 3 天跨越 50 不排程，第 4 天跨越則隔天進入深度�
 
 test("API：深度劇情中只能對話、不消耗 AP、不能換日，完成後回原節點且不能重複完成", async () => {
   await withGame(async client => {
-    await client.playUntil(5, { 4: ["crossA"] });
+    await client.playUntil(4);
+    await client.act("choose", "goGarden");
+    assert.equal(client.state.node.id, "garden");
+    assert.notEqual(client.state.node.id, story.start);
+    assert.equal(client.state.game.ap, 5);
+    for (const choiceId of ["crossA", "practice", "practice", "practice", "practice"]) {
+      await client.act("choose", choiceId);
+    }
+    assert.deepEqual(client.state.pendingDepth, { A: 5 });
+
+    const advanceRevision = client.state.revision;
+    await client.act("advanceDay");
+    assert.equal(client.state.game.day, 5);
+    assert.equal(client.state.activeDepth, "A");
+    assert.equal(client.state.node.id, "depth_a");
+    await client.rejectBody(409, "stale_revision", { type: "advanceDay", revision: advanceRevision });
+
     assert.deepEqual(client.state.node.choices.map(choice => choice.id), ["continue"]);
     assert.equal(client.state.canFinishDepth, false);
     await client.reject(409, "choice_unavailable", "choose", "practice");
@@ -119,16 +155,20 @@ test("API：深度劇情中只能對話、不消耗 AP、不能換日，完成�
     assert.equal(client.state.canFinishDepth, true);
     assert.deepEqual(client.state.node.choices, []);
 
+    const finishRevision = client.state.revision;
     await client.act("finishDepth");
-    assert.equal(client.state.node.id, "daily");
+    assert.equal(client.state.node.id, "garden");
     assert.equal(client.state.activeDepth, null);
     assert.equal(client.state.canFinishDepth, false);
     assert.equal(client.state.game.ap, 5);
     assert.deepEqual(client.state.pendingDepth, {});
+    await client.rejectBody(409, "stale_revision", { type: "finishDepth", revision: finishRevision });
     await client.reject(409, "depth_unavailable", "finishDepth");
 
-    await client.playUntil(7);
+    await client.playUntil(7, { 5: ["crossA"] });
     assert.equal(client.state.activeDepth, null);
+    assert.equal(client.state.node.id, "garden");
+    assert.deepEqual(client.state.pendingDepth, {});
   });
 });
 
@@ -149,14 +189,21 @@ test("API：同日多位到期或到期病患沒有入口時不進入深度劇�
 
 test("API：第 15 天鎖定 MBTI、AP 為 0、不能互動，完成強制事件後才能進入第 16 天", async () => {
   await withGame(async client => {
-    await client.playUntil(15, { 14: ["crossA"] });
+    await client.playUntil(15, { 13: ["setB50"], 14: ["crossA"] });
     const day15 = client.state;
     assert.equal(day15.game.day, 15);
     assert.equal(day15.game.ap, 0);
     assert.equal(day15.game.mbtiLocked, true);
     assert.equal(day15.activeDepth, null);
     assert.deepEqual(day15.pendingDepth, { A: 15 });
-    assert.deepEqual(day15.node.choices.map(choice => choice.id), ["talk", "crisis"]);
+    assert.deepEqual(day15.node.choices.map(choice => choice.id), ["talk", "chatB", "goGarden", "crisis"]);
+
+    // 第 15 天以對話讓 B 信任由 50 變 51，不新增深度劇情排程
+    assert.equal(day15.game.patients.B.trust, 50);
+    await client.act("choose", "chatB");
+    assert.equal(client.state.game.patients.B.trust, 51);
+    assert.equal(client.state.game.ap, 0);
+    assert.deepEqual(client.state.pendingDepth, { A: 15 });
 
     await client.reject(409, "choice_unavailable", "choose", "practice");
     await client.reject(409, "choice_unavailable", "choose", "crossA");
@@ -171,7 +218,9 @@ test("API：第 15 天鎖定 MBTI、AP 為 0、不能互動，完成強制事件
     assert(client.state.game.flags.includes("day15_event_completed"));
     await client.reject(409, "choice_unavailable", "choose", "crisis");
 
+    const day15Revision = client.state.revision;
     await client.act("advanceDay");
+    await client.rejectBody(409, "stale_revision", { type: "advanceDay", revision: day15Revision });
     assert.equal(client.state.game.day, 16);
     assert.equal(client.state.game.ap, 5);
     assert.equal(client.state.game.mbtiLocked, true);

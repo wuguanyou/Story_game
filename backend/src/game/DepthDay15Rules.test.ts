@@ -24,6 +24,8 @@ const story = compileStory({
       { id: "trustB", label: "B 信任 +1", next: "daily", action: "interaction",
         effect: { patient: { id: "B", trust: 1 } } },
       { id: "talk", label: "對話", next: "daily", action: "dialogue", effect: { mbti: { F: 1 } } },
+      { id: "chatA", label: "A 信任 +1 對話", next: "daily", action: "dialogue",
+        effect: { patient: { id: "A", trust: 1 } } },
       { id: "crisis", label: "完成危機", next: "daily", action: "finishCrisis" }
     ]
   }, {
@@ -75,6 +77,16 @@ test("門檻以「由 <=50 變為 >50」判斷，信任值與治癒值皆適用"
   assert.deepEqual(choose(progressAt(4, { healA: 50 }), "healA").pendingDepth, { A: 5 });
   assert.deepEqual(choose(progressAt(4, { healA: 49 }), "healA").pendingDepth, {});
   assert.deepEqual(choose(progressAt(4, { trustB: 50 }), "trustB").pendingDepth, { B: 5 });
+});
+
+test("第 15 天以對話選項讓信任值由 50 變 51，不新增深度劇情排程", () => {
+  const day15 = advanceStoryDay(progressAt(14, { ap: 0, trustA: 50 }), story);
+  assert.equal(day15.game.day, 15);
+  assert.equal(day15.game.ap, 0);
+  const talked = choose(day15, "chatA");
+  assert.equal(talked.game.patients.A.trust, 51);
+  assert.equal(talked.game.ap, 0);
+  assert.deepEqual(talked.pendingDepth, {});
 });
 
 test("已完成深度劇情的病患再次跨越 50 不會重新記錄", () => {
@@ -150,7 +162,7 @@ test("第 15 天鎖定 MBTI、AP 為 0，且不能自由行動", () => {
   assert.throws(() => spendAP({ ...day15.game, ap: 3 }), /第 15 天/);
 
   const ids = storyChoices(story, day15).map(choice => choice.id);
-  assert.deepEqual(ids, ["talk", "crisis"]);
+  assert.deepEqual(ids, ["talk", "chatA", "crisis"]);
   for (const id of ["trustA", "healA", "hurtA", "jumpA", "trustB"]) {
     assert.equal(selectStoryChoice(story, day15, id), undefined);
     assert.equal(selectStoryChoice(story, { ...day15, game: { ...day15.game, ap: 5 } }, id), undefined);
