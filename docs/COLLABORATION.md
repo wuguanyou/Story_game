@@ -1,9 +1,9 @@
 # GitHub 小組協作
 
-- 前端：`frontend/src/App.jsx`、`frontend/src/components/`、`frontend/src/styles.css`
-- 劇情：`frontend/src/stories/`（先讀 `docs/STORY_GUIDE.md`）
+- 前端：`frontend/src/App.jsx`、`frontend/src/components/`、`frontend/src/api/`、`frontend/src/styles.css`
+- 劇情：正式劇情為後端劇情 JSON，放在 `backend/stories/`；`frontend/src/stories/` 只放本機示範資料（先讀 `docs/STORY_GUIDE.md`）
 - 美術：`frontend/public/assets/`
-- 後端：`backend/src/`
+- 後端：`backend/src/`（遊戲系統在 `backend/src/game/`）
 - 文件：`README.md`、`docs/`
 
 ## 分支流程
