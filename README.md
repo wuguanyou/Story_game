@@ -292,6 +292,14 @@ Story_game/
 | [開發日誌](docs/DEVLOG.md) | 里程碑紀錄 |
 | [下一步工作](docs/NEXT_STEPS.md) | 下一階段工作與驗收標準 |
 
+### 課程提案與規劃資料
+
+- [課程專題提案摘要](docs/PROJECT_PROPOSAL.md)（[原始 PDF](docs/reference/植心溫室_第五組期末專題提案.pdf)）
+- [提案分工與預定時程](docs/TEAM_PLAN.md)
+- [提案與目前實作對照、待討論事項](docs/PROPOSAL_GAPS.md)
+
+以上是**提案來源與預定規劃**，不等同於正式遊戲規則已決定或預定成果已完成。
+
 ## 協作流程
 
 1. 每項工作先在 GitHub 開 **Issue**，說明目標與驗收標準。
