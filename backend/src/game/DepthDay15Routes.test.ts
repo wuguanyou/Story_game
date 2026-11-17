@@ -30,7 +30,11 @@ const story = compileStory({
     choices: [
       { id: "practice", label: "練習", next: "garden", action: "interaction" },
       { id: "crossA", label: "A 跨越門檻", next: "garden", action: "interaction",
-        effect: { patient: { id: "A", trust: 51 } } }
+        effect: { patient: { id: "A", trust: 51 } } },
+      { id: "lowerA", label: "A 信任 -1", next: "garden", action: "interaction",
+        effect: { patient: { id: "A", trust: -1 } } },
+      { id: "raiseA", label: "A 信任 +1", next: "garden", action: "interaction",
+        effect: { patient: { id: "A", trust: 1 } } }
     ]
   }, {
     id: "depth_a", text: "A 深度",
@@ -165,7 +169,26 @@ test("API：深度劇情中只能對話、不消耗 AP、不能換日，完成�
     await client.rejectBody(409, "stale_revision", { type: "finishDepth", revision: finishRevision });
     await client.reject(409, "depth_unavailable", "finishDepth");
 
-    await client.playUntil(7, { 5: ["crossA"] });
+    // 完成後讓 A 信任 51→50→51，真正再次跨越門檻
+    assert.equal(client.state.game.patients.A.trust, 51);
+    await client.act("choose", "lowerA");
+    assert.equal(client.state.game.patients.A.trust, 50);
+    assert.equal(client.state.game.ap, 4);
+    await client.act("choose", "raiseA");
+    assert.equal(client.state.game.patients.A.trust, 51);
+    assert.equal(client.state.game.ap, 3);
+    assert.deepEqual(client.state.pendingDepth, {});
+
+    for (let ap = 0; ap < 3; ap++) await client.act("choose", "practice");
+    assert.equal(client.state.game.ap, 0);
+    await client.act("advanceDay");
+    assert.equal(client.state.game.day, 6);
+    assert.equal(client.state.game.ap, 5);
+    assert.equal(client.state.activeDepth, null);
+    assert.equal(client.state.node.id, "garden");
+    assert.deepEqual(client.state.pendingDepth, {});
+
+    await client.playUntil(7);
     assert.equal(client.state.activeDepth, null);
     assert.equal(client.state.node.id, "garden");
     assert.deepEqual(client.state.pendingDepth, {});
