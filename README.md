@@ -23,6 +23,14 @@
 
 ---
 
+## 前端介面示範模板
+
+供前端同學評估的起始與劇情畫面位於 [`frontend/src/prototypes/greenhouse-ui/`](frontend/src/prototypes/greenhouse-ui/README.md)，使用假資料，尚未接上正式後端。
+
+執行 `npm run dev --workspace frontend` 後，開啟 [模板預覽](http://127.0.0.1:5173/?prototype=greenhouse-ui)。原首頁、本機示範與後端測試模式仍保留。
+
+交接方式見 [前端交接說明](docs/FRONTEND_UI_HANDOFF.md)，畫面與採用討論見 [Issue #7](https://github.com/wuguanyou/Story_game/issues/7)。
+
 ## 遊戲介紹
 
 ### 故事背景
