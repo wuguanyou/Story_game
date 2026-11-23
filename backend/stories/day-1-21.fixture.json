@@ -1,0 +1,31 @@
+{
+  "start": "daily",
+  "nodes": [
+    {
+      "id": "daily",
+      "text": "第 1～21 天後端流程測試。",
+      "choices": [
+        {
+          "id": "practice",
+          "label": "測試自由行動",
+          "next": "daily",
+          "action": "interaction",
+          "effect": { "mbti": { "F": 1 } }
+        },
+        {
+          "id": "talk",
+          "label": "測試對話",
+          "next": "daily",
+          "action": "dialogue",
+          "effect": { "mbti": { "T": 1 } }
+        },
+        {
+          "id": "finish_crisis",
+          "label": "標記第 15 天測試事件完成",
+          "next": "daily",
+          "action": "finishCrisis"
+        }
+      ]
+    }
+  ]
+}
