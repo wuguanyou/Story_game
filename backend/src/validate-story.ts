@@ -1,4 +1,5 @@
 import { loadStory } from "./game/loadStory.js";
+import { checkStoryPlayability } from "./game/StoryPlayability.js";
 
 const path = process.argv[2];
 try {
@@ -6,6 +7,9 @@ try {
     throw new Error("請提供一個劇情 JSON 路徑");
   }
   const story = loadStory(path);
+  for (const warning of checkStoryPlayability(story)) {
+    console.warn(`警告 [${warning.code}]：${warning.message}`);
+  }
   console.log(`劇情驗證通過，共 ${story.nodes.size} 個節點，起點為 ${story.start}`);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
