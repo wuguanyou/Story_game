@@ -19,7 +19,7 @@
 > [!IMPORTANT]
 > **目前為遊戲系統原型，尚不能完整遊玩正式劇情。**
 > 後端遊戲規則與劇情引擎、前後端 API 串接已完成；正式劇情、第 15 天危機內容、結局與評分尚未製作。
-> 專案內的劇情資料（`frontend/src/stories/`、`backend/stories/depth.example.json`）都是**測試用範例**，不是正式故事。
+> 專案內的劇情資料（`frontend/src/stories/`、`backend/stories/`）都是**測試用範例**，不是正式故事。
 
 ---
 
@@ -80,6 +80,8 @@ npm run story:validate --workspace backend -- ./stories/depth.example.json   # �
 ```
 
 `story:validate` 的相對路徑以 `backend/` 為基準，也可使用絕對路徑。
+
+後端測試包含以 `backend/stories/day-1-21.fixture.json` 走完第 1～21 天的 HTTP API 整合測試。如需在後端測試模式手動走一次，可在啟動前將 `GAME_STORY_FILE` 指向此檔。每個一般日用完 AP 後換日，第 15 天選擇「標記第 15 天測試事件完成」即可繼續。
 
 <details>
 <summary><strong>用 depth.example.json 走一次深度劇情</strong></summary>
@@ -295,7 +297,7 @@ Story_game/
 - 多位病患的深度劇情同日到期，或排在第 15 天的深度劇情，目前只保留在 `pendingDepth`、不會進入；處理方式待決定。
 - MBTI 同分時 `lockedPreference` 條件不成立，正式同分規則待決定。
 - 後端進度只存在伺服器記憶體，重啟後清除；後端測試模式的進度在重新整理頁面後也會遺失。
-- 現有範本沒有第 15 天強制事件，因此無法玩到第 16 天以後。
+- `depth.example.json` 未提供第 15 天強制事件的完成選項，使用該範本會停在第 15 天。
 
 下一階段工作與驗收標準見 [下一步工作](docs/NEXT_STEPS.md)。
 
