@@ -297,7 +297,7 @@ Story_game/
 - 多位病患的深度劇情同日到期，或排在第 15 天的深度劇情，目前只保留在 `pendingDepth`、不會進入；處理方式待決定。
 - MBTI 同分時 `lockedPreference` 條件不成立，正式同分規則待決定。
 - 後端進度只存在伺服器記憶體，重啟後清除；後端測試模式的進度在重新整理頁面後也會遺失。
-- `depth.example.json` 未提供第 15 天強制事件的完成選項，使用該範本會停在第 15 天。
+- `depth.example.json` 與 `ENABLE_GAME_DEMO` 最小示範都沒有 `finishCrisis` 選項，因此無法通過第 15 天。可使用 `backend/stories/day-1-21.fixture.json` 測試完整 21 天流程。
 
 下一階段工作與驗收標準見 [下一步工作](docs/NEXT_STEPS.md)。
 
