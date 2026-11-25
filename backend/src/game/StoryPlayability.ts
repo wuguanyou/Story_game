@@ -13,7 +13,7 @@ export interface StoryWarning {
 function allows(condition: EventCondition, state: GameState, allowUnknown: boolean): boolean {
   switch (condition.type) {
     case "patient":
-      return allowUnknown;
+      return condition.minimum <= 0 || (condition.minimum <= 100 && allowUnknown);
     case "lockedPreference":
       return state.mbtiLocked && allowUnknown;
     case "all":
@@ -97,26 +97,36 @@ function scanDailyFlow(
 export function checkStoryPlayability(story: CompiledStory): StoryWarning[] {
   const warnings: StoryWarning[] = unusedNodes(story).map(id => ({
     code: "unreachable_node",
-    message: `節點 ${id} 無法從起始節點、每日劇情入口或深度劇情入口抵達`
+    message: `從起始節點、每日劇情入口或深度劇情入口沿選項連線皆無法抵達節點 ${id}`
   }));
-  const reported = new Set<string>();
+  const blocked = new Map<string, { warning: StoryWarning; count: number }>();
   const canFinishCrisis = scanDailyFlow(story, true, (id, state) => {
     const code = state.day === 15 ? "crisis_blocked" : "ap_blocked";
     const key = JSON.stringify([code, id]);
-    if (reported.has(key)) return;
-    reported.add(key);
+    const previous = blocked.get(key);
+    if (previous) {
+      previous.count++;
+      return;
+    }
     const problem = code === "crisis_blocked"
       ? "找不到通往 finishCrisis 的對話路徑"
       : "找不到能繼續消耗 AP 的互動路徑，現行 API 無法換日";
-    warnings.push({ code, message: `第 ${state.day} 天（AP ${state.ap}）節點 ${id}：${problem}` });
+    blocked.set(key, {
+      warning: { code, message: `第 ${state.day} 天（AP ${state.ap}）節點 ${id}：${problem}` },
+      count: 1
+    });
   });
+  for (const { warning, count } of blocked.values()) {
+    if (count > 1) warning.message += `（另有 ${count - 1} 個日期／AP 組合）`;
+    warnings.push(warning);
+  }
 
   if (!canFinishCrisis) {
     warnings.push({ code: "crisis_missing", message: "從起始節點找不到可在第 15 天執行 finishCrisis 的路徑" });
   } else if (!scanDailyFlow(story, false)) {
     warnings.push({
       code: "crisis_conditional",
-      message: "第 15 天的完成路徑依賴病患數值或 MBTI，請試玩確認可達成條件"
+      message: "從第 1 天到完成第 15 天事件的路徑，只有在假設未確定的病患數值或 MBTI 條件可成立時才找得到。請試玩確認這些條件能否在同一局達成"
     });
   }
   return warnings;
