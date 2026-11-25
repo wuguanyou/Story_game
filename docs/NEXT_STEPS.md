@@ -160,8 +160,8 @@
 
 現有 21 天 HTTP 測試可用來驗證引擎流程。第 6 項的驗收仍需搭配正式劇情和正式畫面。製作正式劇情時可使用 `dayStarts` 設定每日入口，並用 `story:validate` 檢查節點參照與可玩性警告。
 
-- 將型別檢查、前後端測試、前端建置與兩份劇情資料的驗證納入 GitHub Actions。
-- 補強第 5 天獨立入口的 HTTP 覆蓋與 CLI 測試穩定性。[Issue #17](https://github.com/wuguanyou/Story_game/issues/17)
+- [PR #20](https://github.com/wuguanyou/Story_game/pull/20) 已驗證 CI 與每日入口、CLI 測試改善，待組員審查及合併。[Issue #17](https://github.com/wuguanyou/Story_game/issues/17)、[Issue #18](https://github.com/wuguanyou/Story_game/issues/18)
+- 另開修補 PR 評估升級 Vitest，並以完整稽核、正式依賴稽核與 CI 驗證。[安全性 Issue #21](https://github.com/wuguanyou/Story_game/issues/21)
 
 ## 課程提案參照（原訂分工與時程）
 

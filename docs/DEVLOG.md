@@ -35,6 +35,13 @@
 
 ---
 
+## 2026-11-25｜CI 審查與依賴稽核
+
+- [PR #20](https://github.com/wuguanyou/Story_game/pull/20) 的 Ubuntu、Windows 與 Node.js 20.19.0、24 共四組檢查已通過。依團隊協作規則，待至少一位其他組員審查後合併。[Actions 執行紀錄](https://github.com/wuguanyou/Story_game/actions/runs/45576018973)
+- 在當時的 `main` 執行 npm audit。完整依賴樹列出三個受影響的開發套件，正式依賴樹回報零項。[安全性 Issue #21](https://github.com/wuguanyou/Story_game/issues/21)
+
+---
+
 ## 新紀錄範本（複製下方）
 
 ### YYYY-MM-DD｜功能或里程碑名稱
