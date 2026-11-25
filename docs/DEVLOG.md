@@ -26,6 +26,15 @@
 
 ---
 
+## 2026-11-23～25｜21 天流程、每日入口與劇情驗證
+
+- [PR #10](https://github.com/wuguanyou/Story_game/pull/10) 建立第 1～21 天的後端 HTTP 流程測試，涵蓋第 15 天的測試事件。
+- [PR #12](https://github.com/wuguanyou/Story_game/pull/12) 加入劇情可玩性警告。[PR #15](https://github.com/wuguanyou/Story_game/pull/15) 加入每日入口設定，並讓換日觸發的深度劇情結束後返回當天的日常入口。
+- [PR #16](https://github.com/wuguanyou/Story_game/pull/16) 改善病患門檻判斷及警告彙整，補上 CLI 與 HTTP 回歸測試。依合併前紀錄，後端 51 項、前端 11 項和後端型別檢查通過。21 天測試資料無警告，深度劇情範本有預期警告，兩者皆退出 0。
+- [Issue #17](https://github.com/wuguanyou/Story_game/issues/17) 追蹤第 5 天獨立入口的 HTTP 斷言與跨環境 CLI 測試穩定性。
+
+---
+
 ## 新紀錄範本（複製下方）
 
 ### YYYY-MM-DD｜功能或里程碑名稱

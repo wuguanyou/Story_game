@@ -76,10 +76,13 @@ npm run build                              # 前端正式建置
 npm run typecheck --workspace backend      # 後端型別檢查
 npm test --workspace backend               # 後端測試
 npm test --workspace frontend              # 前端回歸測試
+npm run story:validate --workspace backend -- ./stories/day-1-21.fixture.json
 npm run story:validate --workspace backend -- ./stories/depth.example.json   # 驗證劇情 JSON
 ```
 
 `story:validate` 的相對路徑以 `backend/` 為基準，也可使用絕對路徑。
+
+劇情驗證器會檢查 JSON 結構、節點參照與可玩性。21 天測試資料可無警告通過；深度劇情範本缺少第 15 天的危機完成選項，會出現預期警告。警告允許驗證成功，結構或參照錯誤會使指令失敗。詳見 [劇情編寫指南](docs/STORY_GUIDE.md)。
 
 後端測試包含以 `backend/stories/day-1-21.fixture.json` 走完第 1～21 天的 HTTP API 整合測試。如需在後端測試模式手動走一次，可在啟動前將 `GAME_STORY_FILE` 指向此檔。每個一般日用完 AP 後換日，第 15 天選擇「標記第 15 天測試事件完成」即可繼續。
 
