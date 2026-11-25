@@ -289,6 +289,7 @@ Story_game/
 - [x] 劇情 JSON 載入與驗證工具
 - [x] 前端 API client 與後端測試模式（前後端串接）
 - [x] 後端單元與 API 整合測試、前端回歸測試
+- [x] GitHub Actions 在 Ubuntu、Windows 搭配 Node.js 20.19.0、24 驗證測試、建置及劇情 JSON
 
 ### 尚未完成
 

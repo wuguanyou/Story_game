@@ -35,10 +35,10 @@
 
 ---
 
-## 2026-11-25｜CI 審查與依賴稽核
+## 2026-11-25｜跨平台 CI 與開發依賴修補
 
-- [PR #20](https://github.com/wuguanyou/Story_game/pull/20) 的 Ubuntu、Windows 與 Node.js 20.19.0、24 共四組檢查已通過。依團隊協作規則，待至少一位其他組員審查後合併。[Actions 執行紀錄](https://github.com/wuguanyou/Story_game/actions/runs/45576018973)
-- 在當時的 `main` 執行 npm audit。完整依賴樹列出三個受影響的開發套件，正式依賴樹回報零項。[安全性 Issue #21](https://github.com/wuguanyou/Story_game/issues/21)
+- [PR #20](https://github.com/wuguanyou/Story_game/pull/20) 已合併（`78422e1`）。GitHub Actions 的 Ubuntu、Windows × Node.js 20.19.0、24 四組檢查通過，並完成第 5 天獨立入口的 HTTP 覆蓋及 CLI 測試穩定性改善。Issue #17、#18 已關閉。[Actions 執行紀錄](https://github.com/wuguanyou/Story_game/actions/runs/45576018973)
+- [PR #23](https://github.com/wuguanyou/Story_game/pull/23) 已合併（`0608e3b`）。Vitest 與 `@vitest/mocker` 升至 `4.1.12`，移除 `tinypool`。完整依賴稽核從三項降為零項，正式依賴稽核維持零項；四組 CI 均通過。[Actions 執行紀錄](https://github.com/wuguanyou/Story_game/actions/runs/45581378292) · [已關閉的安全性 Issue #21](https://github.com/wuguanyou/Story_game/issues/21)
 
 ---
 
