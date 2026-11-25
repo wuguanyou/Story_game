@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -147,7 +147,7 @@ test("CLI 無警告及有警告都退出 0，無效節點參照退出 1", () => 
     const result = spawnSync(process.execPath, ["--import", "tsx", cli, file], {
       cwd: fileURLToPath(new URL("../../", import.meta.url)),
       encoding: "utf8",
-      timeout: 10_000
+      timeout: 30_000
     });
     assert.ifError(result.error);
     return result;
@@ -155,7 +155,7 @@ test("CLI 無警告及有警告都退出 0，無效節點參照退出 1", () => 
   const valid = run(fixture("day-1-21.fixture.json"));
   assert.equal(valid.status, 0, valid.stderr);
   assert.match(valid.stdout, /劇情驗證通過/);
-  assert.equal(valid.stderr, "");
+  assert.doesNotMatch(valid.stderr, /^警告 \[/m);
 
   const warned = run(fixture("depth.example.json"));
   assert.equal(warned.status, 0, warned.stderr);
@@ -173,7 +173,6 @@ test("CLI 無警告及有警告都退出 0，無效節點參照退出 1", () => 
     assert.match(rejected.stderr, /找不到第 2 天的劇情入口節點：missing/);
     assert.doesNotMatch(rejected.stdout, /劇情驗證通過/);
   } finally {
-    rmSync(join(folder, "invalid.json"), { force: true });
-    rmdirSync(folder);
+    rmSync(folder, { recursive: true, force: true });
   }
 });

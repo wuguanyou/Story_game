@@ -117,7 +117,11 @@ function createClient(root: string, initial: GameView) {
 }
 
 test("API：換日切換每日入口，深度劇情完成後回到新一天的入口", async () => {
-  const scenario = compileStory({ ...definition, dayStarts: { 2: "garden", 5: "daily" } });
+  const scenario = compileStory({
+    ...definition,
+    dayStarts: { 2: "garden", 5: "day_05" },
+    nodes: [...definition.nodes, { id: "day_05", text: "第 5 天", choices: [] }]
+  });
   await withGame(async client => {
     assert.equal(client.state.node.id, "daily");
     await client.playUntil(2);
@@ -130,13 +134,18 @@ test("API：換日切換每日入口，深度劇情完成後回到新一天的�
     assert.equal(client.state.activeDepth, "A");
     await client.act("choose", "continue");
     const finished = await client.act("finishDepth");
-    assert.equal(finished.node.id, "daily");
+    assert.equal(finished.node.id, "day_05");
     assert.equal(finished.game.day, 5);
     assert.equal(finished.game.ap, 5);
     assert.equal(finished.activeDepth, null);
     const read = await fetch(client.url);
     assert.equal(read.status, 200);
     assert.deepEqual(await read.json(), finished);
+  }, scenario);
+  await withGame(async client => {
+    await client.playUntil(5);
+    assert.equal(client.state.node.id, "day_05");
+    assert.equal(client.state.activeDepth, null);
   }, scenario);
 });
 
