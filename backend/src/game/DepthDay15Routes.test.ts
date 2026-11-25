@@ -3,9 +3,9 @@ import { once } from "node:events";
 import { test } from "node:test";
 import express from "express";
 import { gameRoutes } from "./GameRoutes.js";
-import { compileStory } from "./StorySystem.js";
+import { compileStory, type StoryDefinition } from "./StorySystem.js";
 
-const story = compileStory({
+const definition: StoryDefinition = {
   start: "daily",
   depthStarts: { A: "depth_a" },
   nodes: [{
@@ -40,7 +40,8 @@ const story = compileStory({
     id: "depth_a", text: "A 深度",
     choices: [{ id: "continue", label: "繼續", next: "depth_a_end", action: "dialogue" }]
   }, { id: "depth_a_end", text: "結束", choices: [] }]
-});
+};
+const story = compileStory(definition);
 
 interface GameView {
   id: string;
@@ -55,10 +56,10 @@ interface GameView {
   node: { id: string; choices: { id: string; label: string }[] };
 }
 
-async function withGame(run: (client: ReturnType<typeof createClient>) => Promise<void>) {
+async function withGame(run: (client: ReturnType<typeof createClient>) => Promise<void>, scenario = story) {
   const app = express();
   app.use(express.json());
-  app.use("/api/games", gameRoutes(story));
+  app.use("/api/games", gameRoutes(scenario));
   const server = app.listen(0, "127.0.0.1");
   try {
     await once(server, "listening");
@@ -114,6 +115,30 @@ function createClient(root: string, initial: GameView) {
   };
   return client;
 }
+
+test("API：換日切換每日入口，深度劇情完成後回到新一天的入口", async () => {
+  const scenario = compileStory({ ...definition, dayStarts: { 2: "garden", 5: "daily" } });
+  await withGame(async client => {
+    assert.equal(client.state.node.id, "daily");
+    await client.playUntil(2);
+    assert.equal(client.state.node.id, "garden");
+    assert.equal(client.state.game.ap, 5);
+    await client.playUntil(4);
+    assert.equal(client.state.node.id, "garden");
+    await client.playUntil(5, { 4: ["crossA"] });
+    assert.equal(client.state.node.id, "depth_a");
+    assert.equal(client.state.activeDepth, "A");
+    await client.act("choose", "continue");
+    const finished = await client.act("finishDepth");
+    assert.equal(finished.node.id, "daily");
+    assert.equal(finished.game.day, 5);
+    assert.equal(finished.game.ap, 5);
+    assert.equal(finished.activeDepth, null);
+    const read = await fetch(client.url);
+    assert.equal(read.status, 200);
+    assert.deepEqual(await read.json(), finished);
+  }, scenario);
+});
 
 test("API：第 3 天跨越 50 不排程，第 4 天跨越則隔天進入深度劇情", async () => {
   await withGame(async client => {
