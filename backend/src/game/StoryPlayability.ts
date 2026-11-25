@@ -27,7 +27,7 @@ function allows(condition: EventCondition, state: GameState, allowUnknown: boole
 }
 
 function unusedNodes(story: CompiledStory): string[] {
-  const reachable = new Set([story.start, ...Object.values(story.depthStarts)]);
+  const reachable = new Set([story.start, ...story.dayStarts.values(), ...Object.values(story.depthStarts)]);
   for (const id of reachable) {
     for (const choice of story.nodes.get(id)!.choices) reachable.add(choice.next);
   }
@@ -86,7 +86,8 @@ function scanDailyFlow(
       entries = nextEntries;
     } else {
       state = advanceDay(state);
-      entries = reachable;
+      const start = story.dayStarts.get(state.day);
+      entries = start === undefined ? reachable : new Set([start]);
     }
   }
 
@@ -96,7 +97,7 @@ function scanDailyFlow(
 export function checkStoryPlayability(story: CompiledStory): StoryWarning[] {
   const warnings: StoryWarning[] = unusedNodes(story).map(id => ({
     code: "unreachable_node",
-    message: `節點 ${id} 無法從起始節點或任何深度劇情入口抵達`
+    message: `節點 ${id} 無法從起始節點、每日劇情入口或深度劇情入口抵達`
   }));
   const reported = new Set<string>();
   const canFinishCrisis = scanDailyFlow(story, true, (id, state) => {

@@ -47,6 +47,14 @@ export function validateStoryData(value: unknown): asserts value is StoryDefinit
     .every(([id, start]) => patients.includes(id) && nonempty(start)))) {
     throw new Error("深度劇情入口資料無效");
   }
+  const dayStarts = value.dayStarts;
+  if (dayStarts !== undefined && (!record(dayStarts) || !Object.entries(dayStarts)
+    .every(([key, start]) => {
+      const day = Number(key);
+      return Number.isInteger(day) && day >= 2 && day <= 21 && String(day) === key && nonempty(start);
+    }))) {
+    throw new Error("每日劇情入口資料無效：dayStarts 的鍵須為 2～21，值須為節點 ID");
+  }
   for (const [index, node] of value.nodes.entries()) {
     if (!record(node) || !nonempty(node.id) || typeof node.text !== "string" || !Array.isArray(node.choices)) {
       throw new Error(`節點資料無效：nodes[${index}]`);

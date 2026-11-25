@@ -23,6 +23,7 @@ export interface StoryDefinition {
   start: string;
   nodes: readonly StoryNode[];
   depthStarts?: Partial<Record<PatientId, string>>;
+  dayStarts?: Record<number, string>;
 }
 
 export interface StoryProgress {
@@ -42,6 +43,11 @@ export function compileStory(input: unknown) {
     nodes.set(node.id, node);
   }
   if (!nodes.has(definition.start)) throw new Error("缺少起始節點");
+  const dayStarts = new Map<number, string>();
+  for (const [day, start] of Object.entries(definition.dayStarts ?? {})) {
+    if (!nodes.has(start)) throw new Error(`找不到第 ${day} 天的劇情入口節點：${start}`);
+    dayStarts.set(Number(day), start);
+  }
   for (const node of nodes.values()) {
     const ids = new Set<string>();
     for (const choice of node.choices) {
@@ -88,7 +94,7 @@ export function compileStory(input: unknown) {
       if (!canEnd.has(id)) throw new Error(`深度劇情節點無法抵達結尾：${id} 缺少不受條件限制的路徑`);
     }
   }
-  return { start: definition.start, nodes, depthStarts: definition.depthStarts ?? {} };
+  return { start: definition.start, nodes, depthStarts: definition.depthStarts ?? {}, dayStarts };
 }
 
 export type CompiledStory = ReturnType<typeof compileStory>;
@@ -136,14 +142,15 @@ export function storyChoices(story: CompiledStory, progress: StoryProgress): Sto
 export function advanceStoryDay(progress: StoryProgress, story?: CompiledStory): StoryProgress {
   if (progress.activeDepth) throw new Error("必須先完成深度劇情");
   const game = advanceDay(progress.game);
-  const updated = { ...progress, game };
+  const node = story?.dayStarts.get(game.day) ?? progress.node;
+  const updated = { ...progress, game, node };
   if (!story || game.day === 15) return updated;
   const due = (["A", "B", "C"] as const).filter(id => progress.pendingDepth[id] === game.day);
   if (due.length !== 1) return updated;
   const patient = due[0];
   const start = story.depthStarts[patient];
   if (!start) return updated;
-  return { ...updated, node: start, activeDepth: { patient, resumeNode: progress.node } };
+  return { ...updated, node: start, activeDepth: { patient, resumeNode: node } };
 }
 
 export function finishDepth(story: CompiledStory, progress: StoryProgress): StoryProgress | undefined {

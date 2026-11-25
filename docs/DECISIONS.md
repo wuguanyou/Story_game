@@ -61,6 +61,7 @@
 
 - React + Vite 前端；Express + TypeScript 後端；npm workspaces。
 - 正式劇情以後端劇情 JSON（`GAME_STORY_FILE`）提供，格式與驗證規則見 `docs/STORY_GUIDE.md`；`frontend/src/stories/` 僅保留本機示範用途。
+- 每日入口可透過 `dayStarts` 指定第 2～21 天的節點，第 1 天使用 `start`。成功換日後，當天有設定就使用指定入口，否則延續換日前的節點。若同時觸發深度劇情，以上述方式選出的日常節點作為完成深度劇情後的返回位置。
 
 ## 三、尚未決定的事項
 

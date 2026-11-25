@@ -120,6 +120,7 @@ npm run story:validate --workspace backend -- ./stories/depth.example.json   # �
 | 第 4～14 天信任值或治癒值由 ≤50 變為 >50，記錄隔天的深度劇情 | 已確認 |
 | 隔天恰好一位病患到期、且劇情有設定入口時，才進入深度劇情 | 已確認 |
 | 深度劇情不消耗 AP，完成後回到原劇情節點，同一病患不重複 | 已確認 |
+| 換日後依 `dayStarts` 切換入口；同日觸發深度劇情時，完成後返回新一天的日常節點 | 暫定（[Issue #14](https://github.com/wuguanyou/Story_game/issues/14)，待團隊確認） |
 | 第 15 天鎖定 MBTI、AP 為 0、不能自由行動 | 已確認 |
 | 第 15 天強制事件完成前，不能進入第 16 天 | 已確認 |
 | 遊戲共 21 天、每天 AP 5 | 暫定 |
@@ -228,6 +229,8 @@ flowchart TB
 
 選項可加上 `condition`（`day`、`slot`、`patient`、`flag`、`lockedPreference`、`all`、`any`）與 `effect`（`patient`、`mbti`）。只能使用驗證器支援的欄位，完整說明與交付流程見 [劇情編寫指南](docs/STORY_GUIDE.md)。
 
+第 1 天從 `start` 開始。可用 `dayStarts` 指定第 2～21 天的入口，例如 `"dayStarts": { "2": "day_02", "15": "day_15" }`，每個值須是已存在的節點 ID。成功換日後，有設定就切換到當天入口，否則延續當前節點。若觸發深度劇情，完成後會回到換日選定的日常節點。
+
 </details>
 
 <details>
@@ -278,7 +281,7 @@ Story_game/
 - [x] 21 天遊戲狀態、AP 消耗與換日
 - [x] 病患 A、B、C 的信任值與治癒值
 - [x] MBTI 八傾向計分與第 15 天鎖定
-- [x] 深度劇情引擎：第 4～14 天觸發、進入、完成並返回原節點
+- [x] 每日劇情入口與深度劇情：依設定切換日常節點，完成深度劇情後回到當天的日常節點
 - [x] 第 15 天強制事件的換日限制與完成標記機制
 - [x] 劇情 JSON 載入與驗證工具
 - [x] 前端 API client 與後端測試模式（前後端串接）
