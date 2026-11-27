@@ -192,7 +192,105 @@ npm run dev
 
 ---
 
-## 二、前端本機示範資料（僅供示範）
+## 二、正式劇情交付驗收
+
+以同一個 commit 驗證交付的 JSON，並把檔名、驗證結果與實際跑過的分支記在 PR。先跑既有 fixture 建立基準，再驗證這次交付的檔案。
+
+### Windows PowerShell 驗證
+
+在專案根目錄執行。傳給驗證器的相對路徑以 `backend/` 為基準。每次執行後立即讀取 `$LASTEXITCODE`。
+
+```powershell
+npm ci
+if ($LASTEXITCODE -ne 0) { throw 'npm ci failed' }
+
+npm run story:validate --workspace backend -- ./stories/day-1-21.fixture.json
+if ($LASTEXITCODE -ne 0) { throw '21-day fixture validation failed' }
+
+npm run story:validate --workspace backend -- ./stories/depth.example.json
+if ($LASTEXITCODE -ne 0) { throw 'Depth example validation failed' }
+```
+
+| 檔案 | 驗證預期 | 試跑預期 |
+| --- | --- | --- |
+| `day-1-21.fixture.json` | 退出 0，無警告 | 每天從 `daily` 延續。第 15 天完成測試事件後可進入第 16 天，流程可到第 21 天。 |
+| `depth.example.json` | 退出 0，出現 `crisis_blocked`、`crisis_missing` | 第 5 天進入病患 A 的深度劇情，再回到 `daily`。第 15 天因沒有完成選項而停住。 |
+
+驗證交付檔時，在根目錄執行下列指令並輸入檔案路徑，例如 `backend/stories/patient-a.json`。使用絕對路徑可讓驗證器與後端使用同一份檔案。
+
+```powershell
+$deliveryStory = (Resolve-Path -LiteralPath (Read-Host '劇情 JSON 路徑') -ErrorAction Stop).Path
+npm run story:validate --workspace backend -- "$deliveryStory"
+if ($LASTEXITCODE -ne 0) { throw 'Story validation failed' }
+```
+
+### 試跑步驟
+
+每次從專案根目錄指定一份 JSON、重新啟動服務並開新局。先以 `day-1-21.fixture.json` 試跑，再按 `Ctrl+C` 停止服務，把下方檔名改成 `depth.example.json` 或改用上一步取得的 `$deliveryStory`，重跑對應案例。試跑結束後可用 `Remove-Item Env:GAME_STORY_FILE` 清除設定。
+
+```powershell
+$env:GAME_STORY_FILE = (Resolve-Path -LiteralPath 'backend/stories/day-1-21.fixture.json').Path
+npm run dev
+```
+
+開啟 Vite 終端顯示的網址，選擇「後端測試模式」→「建立新遊戲」。
+
+1. **AP 與一般換日**。使用 21 天 fixture。第 1 天先選「測試對話」，確認 AP 維持 5。「測試自由行動」每次扣 1 AP，剩餘 AP 大於 0 時無法換日。AP 歸零後按「下一天」，確認第 2 天 AP 恢復為 5，節點延續 `daily`。
+2. **第 15 天危機與第 16 天**。同一局的一般日用完 AP 後逐日換日。第 15 天確認 AP 為 0、MBTI 已鎖定、自由行動不可用，且事件完成前無法換日。選「標記第 15 天測試事件完成」再換日，確認第 16 天 AP 為 5、MBTI 仍鎖定，並回到日常流程。需要驗收完整基準時，繼續到第 21 天並確認無法換到第 22 天。
+3. **深度劇情與返回**。使用深度劇情範本。第 1～3 天每天選五次「測試互動」再換日。第 4 天先選四次「測試互動」，最後選「測試超過信任門檻」，確認 A 的信任值升到 51。換到第 5 天後應顯示 A 的深度劇情，AP 為 5。選「繼續」到結尾，再按「完成深度劇情」，確認返回 `daily`、AP 仍為 5。繼續換到第 15 天，確認沒有危機完成選項且無法進入第 16 天。
+4. **有設定的每日入口**。兩份 JSON 都省略 `dayStarts`，用來重現延續原節點的行為。透過下方後端測試重現設定入口的情境。`DayStarts.test.ts` 涵蓋一般換日、第 15 天入口與第 16 天入口，`DepthDay15Routes.test.ts` 涵蓋第 5 天先跑深度劇情、結束後回到當天設定的入口。交付檔有配置 `dayStarts` 時，另在試跑紀錄對照實際到達的節點與設定值。
+
+### 警告、錯誤與分析限制
+
+- **錯誤**會使驗證以狀態碼 1 結束。修正 JSON、欄位、節點參照或深度劇情結構後重跑。
+- **警告**的退出碼仍為 0。逐項記下警告代碼、日期、AP、節點及處理結果。`ap_blocked`、`crisis_blocked` 或 `crisis_missing` 可能指出卡關，正式交付需用試跑確認並處理。`crisis_conditional` 需另試條件成立與不成立的路徑。`unreachable_node` 是從各起點沿選項連線做的結構檢查。
+- **靜態分析**會追蹤日期、AP、時段與危機旗標，但不模擬病患與 MBTI 的選擇歷史、動態條件能否同時成立或深度劇情排程。即使無警告，也要實際試跑受影響的分支。涉及正式危機與結局的待決事項，請引用 [決策紀錄](DECISIONS.md)。
+
+### 交付檢查表
+
+- [ ] 交付 JSON 的檔名、commit、涵蓋天數、病患及新增或修改的節點已列於 PR。
+- [ ] JSON 驗證退出 0，警告已逐項記錄並附處理結果。
+- [ ] 核對 `start` 與受影響的 `dayStarts`，並驗證一般互動、對話和換日的 AP 行為。
+- [ ] 受影響的深度劇情能依條件觸發、走到結尾並回到預期的日常節點。
+- [ ] 若交付範圍涉及第 15 天，已驗證完成前阻擋換日、完成後進入第 16 天，並核對 AP 與 MBTI 鎖定狀態。
+- [ ] 記錄各條件分支的試跑結果，標明不適用、未覆蓋或待決項目及原因。
+- [ ] 後端型別檢查、前後端測試與正式建置通過。
+
+```powershell
+npm run typecheck --workspace backend
+if ($LASTEXITCODE -ne 0) { throw 'Backend type-check failed' }
+
+npm test --workspace backend
+if ($LASTEXITCODE -ne 0) { throw 'Backend tests failed' }
+
+npm test --workspace frontend
+if ($LASTEXITCODE -ne 0) { throw 'Frontend tests failed' }
+
+npm run build
+if ($LASTEXITCODE -ne 0) { throw 'Frontend build failed' }
+```
+
+### 分支試跑紀錄範本
+
+複製到 PR，每條有差異的選項路徑各填一列。條件分支可從新局重走，並記錄重現所需的初始狀態或先前選擇。
+
+```markdown
+- 分支與 commit：
+- 劇情檔與驗證環境（Windows、Node.js 版本）：
+- 靜態驗證退出碼、警告與處理結果：
+- 覆蓋天數、病患及入口：
+- 未覆蓋、待決項目與相關 Issue：
+
+| 案例 | 起始日／節點／AP 與條件 | 操作或選項順序 | 預期日／節點／AP 與狀態 | 實際結果 | 通過／失敗／不適用及證據 |
+| --- | --- | --- | --- | --- | --- |
+| 每日入口 | | | | | |
+| 深度劇情與返回 | | | | | |
+| 第 15 天與第 16 天 | | | | | |
+```
+
+---
+
+## 三、前端本機示範資料（僅供示範）
 
 ### 檔案位置
 
@@ -223,4 +321,4 @@ example_001: {
 3. 在 `index.js` 匯入 `chapter002`，將 `story` 改為 `{ ...chapter001, ...chapter002 }`。
 4. 以「開始示範劇情」逐一測試分支。
 
-本機示範畫面只實作 `scene`、`speaker`、`text`、`options`，沒有 AP、病患數值或 MBTI 等遊戲規則。正式劇情請依第一節的後端劇情 JSON 製作。
+本機示範畫面只實作 `scene`、`speaker`、`text`、`options`，沒有 AP、病患數值或 MBTI 等遊戲規則。正式劇情請依第一節的後端劇情 JSON 製作，並依第二節驗收。
