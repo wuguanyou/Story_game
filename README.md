@@ -123,7 +123,7 @@ npm run story:validate --workspace backend -- ./stories/depth.example.json   # �
 | 第 4～14 天信任值或治癒值由 ≤50 變為 >50，記錄隔天的深度劇情 | 已確認 |
 | 隔天恰好一位病患到期、且劇情有設定入口時，才進入深度劇情 | 已確認 |
 | 深度劇情不消耗 AP，完成後回到原劇情節點，同一病患不重複 | 已確認 |
-| 換日後依 `dayStarts` 切換入口；同日觸發深度劇情時，完成後返回新一天的日常節點 | 暫定（[Issue #14](https://github.com/wuguanyou/Story_game/issues/14)，待團隊確認） |
+| 換日後依 `dayStarts` 切換入口；同日觸發深度劇情時，完成後返回新一天的日常節點 | 暫定（[已實作 #14](https://github.com/wuguanyou/Story_game/issues/14)，[正式規則待確認 #28](https://github.com/wuguanyou/Story_game/issues/28)） |
 | 第 15 天鎖定 MBTI、AP 為 0、不能自由行動 | 已確認 |
 | 第 15 天強制事件完成前，不能進入第 16 天 | 已確認 |
 | 遊戲共 21 天、每天 AP 5 | 暫定 |
@@ -293,16 +293,16 @@ Story_game/
 
 ### 尚未完成
 
-- [ ] 正式劇情內容（目前只有測試範例）
-- [ ] 第 15 天正式危機劇情與完成條件
-- [ ] 結局、評分與通關判定
-- [ ] 正式遊戲畫面（背景、立繪、音效尚未接入）
-- [ ] 永久存檔、資料庫與帳號
+- [ ] 正式劇情整理與 JSON 交付（[#24](https://github.com/wuguanyou/Story_game/issues/24)、[#33](https://github.com/wuguanyou/Story_game/issues/33)）
+- [ ] 第 15 天正式危機與結局、評分、通關判定（[#25](https://github.com/wuguanyou/Story_game/issues/25)、[#29](https://github.com/wuguanyou/Story_game/issues/29)）
+- [ ] 正式遊戲畫面、美術及音效（[#7](https://github.com/wuguanyou/Story_game/issues/7)、[#31](https://github.com/wuguanyou/Story_game/issues/31)、[#34](https://github.com/wuguanyou/Story_game/issues/34)、[#35](https://github.com/wuguanyou/Story_game/issues/35)）
+- [ ] 正式存檔與帳號需求確認（[#30](https://github.com/wuguanyou/Story_game/issues/30)）
+- [ ] 劇情交付驗收範本與正式版全流程驗收（[#32](https://github.com/wuguanyou/Story_game/issues/32)、[#36](https://github.com/wuguanyou/Story_game/issues/36)）
 
 ### 已知限制
 
-- 多位病患的深度劇情同日到期，或排在第 15 天的深度劇情，目前只保留在 `pendingDepth`、不會進入；處理方式待決定。
-- MBTI 同分時 `lockedPreference` 條件不成立，正式同分規則待決定。
+- 多位病患的深度劇情同日到期，或排在第 15 天的深度劇情，目前只保留在 `pendingDepth`、不會進入；處理方式待決定（[#26](https://github.com/wuguanyou/Story_game/issues/26)）。
+- MBTI 同分時 `lockedPreference` 條件不成立，正式同分規則待決定（[#27](https://github.com/wuguanyou/Story_game/issues/27)）。
 - 後端進度只存在伺服器記憶體，重啟後清除；後端測試模式的進度在重新整理頁面後也會遺失。
 - `depth.example.json` 與 `ENABLE_GAME_DEMO` 最小示範都沒有 `finishCrisis` 選項，因此無法通過第 15 天。可使用 `backend/stories/day-1-21.fixture.json` 測試完整 21 天流程。
 
