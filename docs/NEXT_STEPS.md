@@ -1,166 +1,36 @@
 # 下一階段工作
 
-本文件整理後端系統與 API 串接完成後的下一階段工作。負責角色為建議，實際負責人與期限由團隊討論後填入 Issue；未決定的規則以 [決策紀錄](DECISIONS.md) 為準。
+優先級為建議。P0 是正式內容與核心規則的優先工作，P1 是下一輪製作、整合與驗收，P2 依團隊確認的範圍安排。各 Issue 記錄工作目標、前置條件、相依任務、交付成果與驗收標準。規則決議記入 [決策紀錄](DECISIONS.md)，人員與期限由團隊確認。
 
-每一項的「Issue 內容」區塊可直接複製到 GitHub 建立 Issue（標題使用該節的標題）。
+## 工作清單
 
-## 工作順序與相依關係
+| Issue | 優先級 | 工作 | 類型 | 相依與啟動條件 |
+| --- | --- | --- | --- | --- |
+| [#7](https://github.com/wuguanyou/Story_game/issues/7) | P1 | 評估前端畫面原型 | 可先試用，採用需團隊決定 | [Draft PR #8](https://github.com/wuguanyou/Story_game/pull/8) 提供試用版本。 |
+| [#24](https://github.com/wuguanyou/Story_game/issues/24) | P0 | 整理正式劇情與節點清單 | 可獨立啟動 | 無。涉及待決規則的分支依危機、排程、MBTI、日程與結局決策補齊。 |
+| [#25](https://github.com/wuguanyou/Story_game/issues/25) | P0 | 確認第 15 天正式危機與完成條件 | 團隊決策 | 無硬性前置。若採用 MBTI 或深度排程結果，與對應決策對齊。 |
+| [#26](https://github.com/wuguanyou/Story_game/issues/26) | P1 | 確認深度劇情同日到期與第 15 天排程 | 團隊決策 | 無硬性前置。確認結論與危機流程相容。 |
+| [#27](https://github.com/wuguanyou/Story_game/issues/27) | P1 | 確認 MBTI 同分判定 | 團隊決策 | 無。危機與結局可引用本議題的結果。 |
+| [#28](https://github.com/wuguanyou/Story_game/issues/28) | P1 | 確認正式日程、AP 與換日條件 | 團隊決策 | 無硬性前置。結尾日及危機例外須與結局、危機議題對齊。 |
+| [#29](https://github.com/wuguanyou/Story_game/issues/29) | P0 | 確認結局、評分、通關與適性報告 | 團隊決策 | 可先討論。最終口徑對齊 [#28](https://github.com/wuguanyou/Story_game/issues/28)、[#27](https://github.com/wuguanyou/Story_game/issues/27)、[#25](https://github.com/wuguanyou/Story_game/issues/25)。 |
+| [#30](https://github.com/wuguanyou/Story_game/issues/30) | P2 | 確認正式存檔與帳號需求 | 團隊決策 | 無。正式 UI 的續玩入口依結論安排。 |
+| [#31](https://github.com/wuguanyou/Story_game/issues/31) | P1 | 確認視覺素材、音效與授權規格 | 團隊決策 | 可先盤點。依 [#24](https://github.com/wuguanyou/Story_game/issues/24) 補齊場景，搭配 [#7](https://github.com/wuguanyou/Story_game/issues/7) 的呈現討論。 |
+| [#32](https://github.com/wuguanyou/Story_game/issues/32) | P1 | 建立正式劇情交付的後端驗收範本 | 可獨立執行 | 無。供 [#24](https://github.com/wuguanyou/Story_game/issues/24) 與正式 JSON 交付使用。 |
+| [#33](https://github.com/wuguanyou/Story_game/issues/33) | P1 | 製作與驗證正式劇情 JSON | 部分可先做 | 依 [#24](https://github.com/wuguanyou/Story_game/issues/24) 分批開始，參考 [#32](https://github.com/wuguanyou/Story_game/issues/32)。危機、排程、MBTI、日程及結局部分依 [#25](https://github.com/wuguanyou/Story_game/issues/25)、[#26](https://github.com/wuguanyou/Story_game/issues/26)、[#27](https://github.com/wuguanyou/Story_game/issues/27)、[#28](https://github.com/wuguanyou/Story_game/issues/28)、[#29](https://github.com/wuguanyou/Story_game/issues/29)。 |
+| [#34](https://github.com/wuguanyou/Story_game/issues/34) | P1 | 製作並交付正式美術與音效 | 部分可先做 | 依 [#31](https://github.com/wuguanyou/Story_game/issues/31) 的已確認項目先交付，依 [#24](https://github.com/wuguanyou/Story_game/issues/24) 補完場景。 |
+| [#35](https://github.com/wuguanyou/Story_game/issues/35) | P1 | 整合正式遊戲畫面與後端 API | 部分可先做 | 正式版依 [#7](https://github.com/wuguanyou/Story_game/issues/7)／PR #8 的畫面決策與 [#31](https://github.com/wuguanyou/Story_game/issues/31)、[#34](https://github.com/wuguanyou/Story_game/issues/34)，搭配 [#33](https://github.com/wuguanyou/Story_game/issues/33) 驗收。結局與存檔介面依 [#29](https://github.com/wuguanyou/Story_game/issues/29)、[#30](https://github.com/wuguanyou/Story_game/issues/30)。 |
+| [#36](https://github.com/wuguanyou/Story_game/issues/36) | P1 | 驗收正式劇情的完整遊戲流程 | 整合交付後驗收 | 需 [#33](https://github.com/wuguanyou/Story_game/issues/33)、[#35](https://github.com/wuguanyou/Story_game/issues/35)，以及 [#25](https://github.com/wuguanyou/Story_game/issues/25)、[#26](https://github.com/wuguanyou/Story_game/issues/26)、[#27](https://github.com/wuguanyou/Story_game/issues/27)、[#28](https://github.com/wuguanyou/Story_game/issues/28)、[#29](https://github.com/wuguanyou/Story_game/issues/29) 涉及的正式規則已落地。存檔依 [#30](https://github.com/wuguanyou/Story_game/issues/30) 的決議驗收。 |
+| [#37](https://github.com/wuguanyou/Story_game/issues/37) | P2 | 確認目前交付範圍、分工與里程碑 | 團隊決策 | 可立即討論。估算應參照 [#24](https://github.com/wuguanyou/Story_game/issues/24)、[#34](https://github.com/wuguanyou/Story_game/issues/34)、[#36](https://github.com/wuguanyou/Story_game/issues/36)。 |
 
-```text
-1. 正式劇情資料整理 ──┬──> 3. 正式劇情 JSON 製作與驗證 ──┐
-2. 第 15 天事件確認 ──┘                                  ├──> 6. 完整遊戲流程測試
-5. 視覺素材與音效需求 ──> 4. 前端正式遊戲畫面整合 ──────┘
-```
+## 執行順序
 
-- 1、2、5 可同時開始。
-- 3 需要 1 的內容；第 15 天部分另需 2 的結論。
-- 4 可先以 `depth.example.json` 開發，素材與正式劇情到位後再替換。
-- 6 需要 3、4 完成；結局相關測試受待決規則阻擋。
-
----
-
-## 1. 正式劇情資料整理
-
-**Issue 標題**：`[劇情] 整理正式劇情資料與節點清單`
-
-**Issue 內容**：
-
-- **工作目標**：把企劃提案中的劇情整理成可轉成劇情 JSON 的清單：每日日常節點、三位病患（A、B、C）的互動與深度劇情、各選項的數值與 MBTI 效果。
-- **已知前置條件**：
-  - 劇情格式以 `docs/STORY_GUIDE.md` 第一節為準，只能使用現有的 `action`、條件與效果。
-  - 已確認規則：第 4～14 天跨過 50 觸發隔天深度劇情、深度劇情不消耗 AP、第 15 天 MBTI 鎖定且不可自由行動。
-- **具體交付成果**：
-  - 節點清單（節點 ID、文字、選項、`next`、`action`、條件、效果）。
-  - 三位病患的深度劇情大綱與入口節點。
-  - 現有格式無法表達的需求清單（例如說話者、背景、新條件）。
-- **驗收標準**：
-  - 每個選項都能對應到現有的 `interaction`／`dialogue`／`finishCrisis` 之一。
-  - 條件與效果只使用 `StoryValidation.ts` 支援的類型。
-  - 需要新格式或新規則的地方已列出，未自行假設。
-- **建議負責角色**：企劃／劇情組；程式組協助確認格式可行性。
-- **是否受待決規則阻擋**：部分。日常與深度劇情可先進行；第 15 天危機、結局分支，以及依「同日多位到期」或「MBTI 同分」而不同的劇情，需等決策。
-
----
-
-## 2. 第 15 天事件內容與規則確認
-
-**Issue 標題**：`[規則] 確認第 15 天強制事件內容與完成條件`
-
-**Issue 內容**：
-
-- **工作目標**：由團隊決定第 15 天正式危機劇情的內容與完成條件，並一併決定相關待決規則。
-- **已知前置條件**：
-  - 已實作：第 15 天 MBTI 鎖定、AP 為 0、不能自由行動；`finishCrisis` 選項標記事件完成後才能進入第 16 天。
-  - 已實作：`lockedPreference` 條件可依鎖定後的 MBTI 傾向顯示不同選項。
-- **具體交付成果**（記錄於 `docs/DECISIONS.md`）：
-  - 第 15 天危機劇情大綱與完成條件（是否有成功門檻、是否與病患數值或 MBTI 相關）。
-  - 第 15 天尚未執行的深度劇情（第 14 天跨越門檻者）如何處理。
-  - MBTI 同分時的判定方式。
-  - 若決定需要現有機制以外的規則，列出需修改的程式範圍，另開 Issue。
-- **驗收標準**：
-  - 上述每一項都有明確結論並寫入「已確認的規則」，或明確標示維持待決。
-  - 結論可以用現有劇情格式表達；不能表達的部分已有對應的程式 Issue。
-- **建議負責角色**：企劃／劇情組主導，全組討論確認；程式組評估實作影響。
-- **是否受待決規則阻擋**：本身就是決策工作；完成後解除第 3、6 項的部分阻擋。
-
----
-
-## 3. 正式劇情 JSON 製作與驗證
-
-**Issue 標題**：`[劇情] 製作並驗證正式劇情 JSON`
-
-**Issue 內容**：
-
-- **工作目標**：依第 1、2 項的結果製作正式劇情 JSON，通過驗證並可在後端測試模式試玩。
-- **已知前置條件**：
-  - 第 1 項的節點清單；第 15 天部分需第 2 項結論。
-  - 格式與交付流程見 `docs/STORY_GUIDE.md`；範例見 `backend/stories/depth.example.json`。
-- **具體交付成果**：
-  - `backend/stories/` 下的正式劇情 JSON（可依天數或病患分批 PR）。
-  - PR 說明：涵蓋的天數、病患、深度劇情入口，以及仍待決定的部分。
-- **驗收標準**：
-  - `npm run story:validate --workspace backend -- <檔案路徑>` 通過。
-  - 以 `GAME_STORY_FILE` 載入後，在後端測試模式能走過新增的日常與深度劇情分支。
-  - 每個深度劇情節點都有不需條件即可到達結尾的路徑。
-  - 沒有使用未定義的欄位、條件或效果。
-- **建議負責角色**：劇情組製作；程式組審查格式並協助驗證。
-- **是否受待決規則阻擋**：部分。第 4～14 天日常與深度劇情可先製作；第 15 天危機內容需第 2 項結論；結局內容需結局規則決定。
-
----
-
-## 4. 前端正式遊戲畫面整合
-
-**Issue 標題**：`[前端] 建立正式遊戲畫面並串接後端 API`
-
-評估起始與劇情畫面模板的工作仍在進行。先完成瀏覽器視覺驗收、截圖與組員討論，再決定是否採用於正式畫面。[原型 Issue #7](https://github.com/wuguanyou/Story_game/issues/7)
-
-**Issue 內容**：
-
-- **工作目標**：以後端 API 為資料來源，建立玩家使用的正式遊戲畫面，取代目前僅供驗證的後端測試模式介面。
-- **已知前置條件**：
-  - API client：`frontend/src/api/gameApi.js`；現有串接與錯誤處理可參考 `frontend/src/components/BackendGame.jsx`。
-  - API 只提供節點 `id`、`text` 與選項 `id`、`label`；說話者、背景、立繪等若需要，須先另開 Issue 擴充後端格式。
-  - 視覺與音效規格需第 5 項結果。
-- **具體交付成果**：
-  - 正式遊戲畫面元件，顯示劇情文字、選項、日期、AP 與必要的病患或 MBTI 資訊（顯示哪些數值給玩家需團隊確認）。
-  - 保留現有錯誤處理行為：`409 stale_revision` 重新讀取不重送、請求進行中防止重複點擊、離開畫面後舊回應不覆蓋新進度。
-  - 對應的前端回歸測試。
-- **驗收標準**：
-  - `npm run build` 與 `npm test --workspace frontend` 通過。
-  - 以 `depth.example.json` 能完成建立遊戲、互動、換日、第 5 天深度劇情並返回原節點。
-  - 本機示範模式與既有測試不受影響（或經團隊同意後移除）。
-- **建議負責角色**：前端程式組；美術協助畫面規格。
-- **是否受待決規則阻擋**：部分。畫面與 API 串接可先開發；結局畫面、永久存檔／帳號介面需等相關決策。
-
----
-
-## 5. 視覺素材與音效需求確認
-
-**Issue 標題**：`[美術] 確認視覺素材與音效需求清單`
-
-**Issue 內容**：
-
-- **工作目標**：確認正式版需要的背景、角色立繪、介面元素與音效，以及風格、規格與授權來源。
-- **已知前置條件**：
-  - 素材資料夾：`frontend/public/assets/backgrounds/`、`characters/`、`audio/`（目前為空）。
-  - 美術風格與素材來源仍列於 `docs/DECISIONS.md` 的待決事項。
-- **具體交付成果**：
-  - 素材清單：用途、對應場景或角色、檔案格式與尺寸、命名規則。
-  - 風格參考與授權方式（自製、授權素材或其他），記錄於 `docs/DECISIONS.md`。
-  - 若素材需在劇情中指定（例如每個節點的背景），提出劇情格式需求給程式組。
-- **驗收標準**：
-  - 清單涵蓋正式畫面與主要劇情場景。
-  - 每項素材都有確認過的授權來源。
-  - 需要程式支援的部分已開 Issue。
-- **建議負責角色**：美術、音效；企劃確認風格方向。
-- **是否受待決規則阻擋**：受「美術風格與素材來源」待決事項影響，需先完成該決策；不受遊戲規則阻擋。
-
----
-
-## 6. 完整遊戲流程測試
-
-**Issue 標題**：`[測試] 正式劇情的 21 天完整流程測試`
-
-**Issue 內容**：
-
-- **工作目標**：以正式劇情與正式畫面，驗證從第 1 天到第 21 天的完整流程符合已確認規則。
-- **已知前置條件**：
-  - 第 3、4 項完成。
-  - 現有自動測試：後端 `npm test --workspace backend`、前端 `npm test --workspace frontend`。
-- **具體交付成果**：
-  - 測試清單與結果紀錄：AP 與換日、病患數值上下限、第 4～14 天深度劇情觸發與返回、第 15 天鎖定與強制事件、第 16～21 天流程。
-  - 發現的問題以 Issue 回報，並區分「程式錯誤」、「劇情資料錯誤」、「規則未決定」。
-  - 測試結果記錄於 `docs/DEVLOG.md`。
-- **驗收標準**：
-  - 已確認規則的每一項都有對應的測試步驟與結果。
-  - 自動測試、`npm run build` 與劇情驗證指令通過。
-  - 不以測試結果自行決定待決規則；遇到未決定的行為時記錄並回報。
-- **建議負責角色**：測試（可由全組輪流）；程式組與劇情組修正回報問題。
-- **是否受待決規則阻擋**：部分。第 1～16 天流程可在第 3、4 項完成後測試；結局、評分與通關判定需等相關決策後才能驗收。
+1. 同步啟動 [#24](https://github.com/wuguanyou/Story_game/issues/24) 的日常與深度劇情整理、[#32](https://github.com/wuguanyou/Story_game/issues/32) 的後端交付驗收範本，以及 [#7](https://github.com/wuguanyou/Story_game/issues/7) 的瀏覽器試用。團隊可並行討論 [#25](https://github.com/wuguanyou/Story_game/issues/25) 的危機與 [#29](https://github.com/wuguanyou/Story_game/issues/29) 的結局。
+2. [#33](https://github.com/wuguanyou/Story_game/issues/33) 依已確認內容分批提交。需要危機、排程、MBTI、日程及結局決議的分支，在對應規則確認後補齊。若需要改動引擎或 API，先依確認的範圍開實作 Issue。
+3. [#35](https://github.com/wuguanyou/Story_game/issues/35) 可用現有 API 和測試範本先驗證流程。正式介面依 [#7](https://github.com/wuguanyou/Story_game/issues/7)、[#31](https://github.com/wuguanyou/Story_game/issues/31) 與 [#34](https://github.com/wuguanyou/Story_game/issues/34) 整合，再以 [#36](https://github.com/wuguanyou/Story_game/issues/36) 驗收正式版本。
 
 ## 自動化驗證與測試維護
 
-現有 21 天 HTTP 測試可用來驗證引擎流程。第 6 項的驗收仍需搭配正式劇情和正式畫面。製作正式劇情時可使用 `dayStarts` 設定每日入口，並用 `story:validate` 檢查節點參照與可玩性警告。
+現有 21 天 HTTP 測試可用來驗證引擎流程。正式版驗收（[#36](https://github.com/wuguanyou/Story_game/issues/36)）需搭配正式劇情和正式畫面。製作正式劇情時可使用 `dayStarts` 設定每日入口，並用 `story:validate` 檢查節點參照與可玩性警告。
 
 - 跨平台 CI 與第 5 天入口、CLI 回歸測試改善已合併。[PR #20](https://github.com/wuguanyou/Story_game/pull/20) · [Issue #17](https://github.com/wuguanyou/Story_game/issues/17) · [Issue #18](https://github.com/wuguanyou/Story_game/issues/18)
 - Vitest 修補已合併，完整與正式依賴稽核皆為零項。[PR #23](https://github.com/wuguanyou/Story_game/pull/23) · [Issue #21](https://github.com/wuguanyou/Story_game/issues/21)
