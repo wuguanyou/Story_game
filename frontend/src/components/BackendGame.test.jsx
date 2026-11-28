@@ -54,8 +54,14 @@ function installFetch() {
   };
 }
 
-const flush = () => act(async () => { await new Promise(r => setTimeout(r, 0)); });
-const click = async name => { fireEvent.click(screen.getByRole('button', { name })); await flush(); };
+const flush = () => act(async () => { await new Promise(r => setTimeout(r, 0)); });const click = async name => {
+  if (name === '後端測試模式') {
+    fireEvent.click(screen.getByRole('button', { name: '關於遊戲' }));
+    await flush();
+  }
+  fireEvent.click(screen.getByRole('button', { name }));
+  await flush();
+};
 const posts = calls => calls.filter(call => call.method === 'POST' && call.url.endsWith('/actions'));
 
 let api;
