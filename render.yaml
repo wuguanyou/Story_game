@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: story-game-demo
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
+      - key: GAME_STORY_FILE
+        value: backend/stories/day-1-21.fixture.json
