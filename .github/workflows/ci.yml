@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }} / Node.js ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['20.19.0', '24']
+
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check backend
+        run: npm run typecheck --workspace backend
+
+      - name: Test backend
+        run: npm test --workspace backend
+
+      - name: Test frontend
+        run: npm test --workspace frontend
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Validate the 21-day fixture
+        run: npm run story:validate --workspace backend -- ./stories/day-1-21.fixture.json
+
+      - name: Validate the depth-story example
+        # The validator reports playability warnings and exits nonzero on validation errors.
+        run: npm run story:validate --workspace backend -- ./stories/depth.example.json
