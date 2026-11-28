@@ -1,0 +1,1707 @@
+
+/* =========================================================
+   1. GLOBAL SETTINGS
+   ========================================================= */
+
+.greenhouse-app {
+  --gh-reading: 16px;
+  --gh-menu: 22px;
+  min-height: 100vh;
+}
+
+.greenhouse-app.text-large {
+  --gh-reading: 20px;
+  --gh-menu: 25px;
+}
+
+.text-large .dialogue-panel > p,
+.text-large .choice {
+  font-size: 21px;
+}
+
+
+/* =========================================================
+   2. TITLE SCREEN BASE
+   ========================================================= */
+
+.gh-title {
+  --lamp-scale: 1;
+  --lamp-x: 68%;
+  --cream: #dcdedb;
+  --muted: #727e78;
+  --gold: #acbfb1;
+
+  position: relative;
+  isolation: isolate;
+  height: 100svh;
+  min-height: 540px;
+  overflow: hidden;
+
+  background: #000;
+  color: var(--cream);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+}
+
+.gh-title button {
+  font-family: inherit;
+}
+
+.gh-title button:focus-visible {
+  outline: 1px solid #bbd2c4;
+  outline-offset: 7px;
+}
+
+
+/* =========================================================
+   3. GREENHOUSE BACKGROUND
+   ========================================================= */
+
+.gh-reveal {
+  position: absolute;
+  inset: 0;
+
+  clip-path: circle(
+    0% at var(--lamp-x) calc(40px * var(--lamp-scale))
+  );
+
+  transition: clip-path 2.7s cubic-bezier(.18, .56, .3, 1);
+  background: #000;
+}
+
+.is-lit .gh-reveal {
+  clip-path: circle(
+    150% at var(--lamp-x) calc(40px * var(--lamp-scale))
+  );
+}
+
+.greenhouse-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .65;
+}
+
+
+/* Background shading */
+
+.gh-scene-shade {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      #000 0%,
+      #000e 27%,
+      #0004 68%,
+      #0007
+    ),
+    linear-gradient(
+      0deg,
+      #000 0%,
+      transparent 24%,
+      #0002 80%,
+      #0009
+    );
+
+  pointer-events: none;
+}
+
+.gh-scene-shade::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .04;
+
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23n)' opacity='.7' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   4. HOSPITAL LIGHT EFFECT
+   ========================================================= */
+
+.gh-hospital-light {
+  position: absolute;
+  top: calc(40px * var(--lamp-scale));
+  left: var(--lamp-x);
+
+  width: 95%;
+  height: calc(100% - 40px * var(--lamp-scale));
+
+  transform: translateX(-50%);
+
+  clip-path: polygon(
+    46% 0,
+    54% 0,
+    100% 100%,
+    0 100%
+  );
+
+  background: radial-gradient(
+    ellipse at 50% 0,
+    #d4eee432 0%,
+    #accfc11a 34%,
+    transparent 78%
+  );
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   5. SKULL IMAGE
+   ========================================================= */
+
+.gh-skull {
+  position: absolute;
+  right: 0;
+  bottom: -5%;
+
+  width: min(52vw, 800px);
+  max-height: 86%;
+
+  object-fit: contain;
+  object-position: bottom right;
+
+  opacity: .8;
+
+  filter: brightness(.72) saturate(.5) contrast(1.1);
+
+  mask-image: linear-gradient(
+    0deg,
+    transparent,
+    black 16%,
+    black 89%,
+    transparent
+  );
+
+  pointer-events: none;
+  user-select: none;
+
+  animation: skull-breathe 11s ease-in-out infinite;
+}
+
+@keyframes skull-breathe {
+  0%,
+  100% {
+    filter: brightness(.72) saturate(.5) contrast(1.1);
+  }
+
+  50% {
+    filter: brightness(.77) saturate(.5) contrast(1.1);
+  }
+}
+
+
+/* =========================================================
+   6. MAIN TITLE AND MENU
+   ========================================================= */
+
+.gh-main {
+  position: absolute;
+  z-index: 1;
+
+  left: 12%;
+  top: 25%;
+  width: 440px;
+
+  text-align: left;
+}
+
+.gh-main h1 {
+  margin: 0 0 clamp(45px, 7vh, 85px);
+
+  color: #e3e5e0;
+
+  font-family:
+    "Noto Serif TC",
+    "Source Han Serif TC",
+    "PMingLiU",
+    "Songti TC",
+    serif;
+
+  font-weight: 400;
+  font-size: clamp(64px, 6.8vw, 108px);
+  line-height: 1.25;
+  letter-spacing: .19em;
+  text-indent: 0;
+  white-space: nowrap;
+
+  text-shadow:
+    0 0 30px #d7e7df20,
+    1px 2px 0 #4b5f5522;
+}
+
+
+/* Menu layout */
+
+.gh-menu {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: 56px;
+  gap: 6px;
+
+  width: 240px;
+}
+
+.gh-menu-item {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+
+  padding: 10px 0;
+  border: 0;
+
+  background: transparent;
+  color: #b3bab5;
+
+  font-family: "PMingLiU", "Songti TC", serif !important;
+  font-size: var(--gh-menu);
+  letter-spacing: .3em;
+  text-indent: 0;
+  line-height: 1.5;
+
+  text-shadow: 0 0 18px #ddece118;
+
+  transition:
+    color .3s,
+    text-shadow .3s;
+}
+
+
+/* Menu decorative diamond */
+
+.gh-menu-item::before {
+  content: "";
+
+  position: absolute;
+  left: -25px;
+  top: 50%;
+
+  width: 5px;
+  height: 5px;
+
+  border: 1px solid #c9d9ca;
+
+  transform: translateY(-50%) rotate(45deg);
+  opacity: 0;
+
+  transition: opacity .25s;
+}
+
+.gh-menu-item:hover:not(:disabled),
+.gh-menu-item:focus-visible {
+  color: #f1f5ed;
+  text-shadow: 0 0 19px #d8e8d777;
+}
+
+.gh-menu-item:hover:not(:disabled)::before,
+.gh-menu-item:focus-visible::before {
+  opacity: 1;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.gh-title .gh-menu-item:disabled {
+  opacity: .24;
+  cursor: default;
+}
+
+
+/* Menu entrance animation */
+
+.gh-emerge {
+  opacity: 0;
+  transform: translateY(6px);
+
+  transition:
+    opacity 1.8s ease .8s,
+    transform 1.8s ease .8s;
+}
+
+.is-lit .gh-emerge {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   7. LAMP AND LIGHTING
+   ========================================================= */
+
+/* Lamp container */
+
+.gh-lamp {
+  position: absolute;
+  top: 0;
+  left: 68%;
+
+  width: 240px;
+  height: 420px;
+
+  transform: translateX(-50%);
+  z-index: 2;
+
+  pointer-events: none;
+}
+
+
+/* Lamp bulb */
+
+.gh-lamp-bulb {
+  position: absolute;
+  top: 32px;
+  left: 72px;
+
+  width: 96px;
+  height: 8px;
+
+  border-radius: 50%;
+  background: #cbdcd0;
+
+  filter: blur(8px);
+  opacity: 0;
+
+  transition:
+    opacity 1.2s,
+    box-shadow 1.2s;
+
+  pointer-events: none;
+}
+
+.is-lit .gh-lamp-bulb {
+  opacity: .55;
+
+  box-shadow:
+    0 12px 48px #dcefe54a,
+    0 42px 150px #c4e7db25;
+}
+
+
+/* Lamp halo */
+
+.gh-lamp-halo {
+  position: absolute;
+  left: -280px;
+  top: 5px;
+
+  width: 800px;
+  height: 900px;
+
+  border-radius: 50%;
+
+  background: radial-gradient(
+    ellipse at 50% 14%,
+    #d5f5e92b,
+    transparent 76%
+  );
+
+  opacity: 0;
+
+  transition: opacity 1.6s;
+  pointer-events: none;
+}
+
+.is-lit .gh-lamp-halo {
+  opacity: 1;
+}
+
+
+/* =========================================================
+   8. LAMP FLICKERING ANIMATION
+   ========================================================= */
+
+/* Flicker only when the lamp is turned on */
+
+.gh-title.is-lit .gh-lamp-bulb {
+  animation: gh-bulb-flicker 5s infinite;
+}
+
+.gh-title.is-lit .gh-lamp-halo {
+  animation: gh-halo-flicker 5s infinite;
+}
+
+
+/* Bulb flicker */
+
+@keyframes gh-bulb-flicker {
+  0%,
+  85%,
+  89%,
+  93%,
+  100% {
+    opacity: .55;
+  }
+
+  86% {
+    opacity: .3;
+  }
+
+  88% {
+    opacity: .48;
+  }
+
+  91% {
+    opacity: .25;
+  }
+}
+
+
+/* Halo flicker */
+
+@keyframes gh-halo-flicker {
+  0%,
+  85%,
+  89%,
+  93%,
+  100% {
+    opacity: 1;
+  }
+
+  86% {
+    opacity: .55;
+  }
+
+  88% {
+    opacity: .85;
+  }
+
+  91% {
+    opacity: .4;
+  }
+}
+
+
+/* =========================================================
+   9. PULL CORD
+   ========================================================= */
+
+.gh-pull-switch {
+  position: absolute;
+  left: 80px;
+  top: 0;
+
+  width: 80px;
+  height: calc(340px + var(--pull));
+
+  padding: 0;
+  border: 0;
+
+  background: transparent;
+
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+
+  transform-origin: 40px 0;
+
+  animation: cord-sway 7s ease-in-out infinite;
+
+  transition: height .18s ease-out;
+}
+
+.gh-pull-switch:active {
+  cursor: grabbing;
+}
+
+.is-pulling .gh-pull-switch {
+  animation: none;
+  transition: none;
+}
+
+
+/* Pull cord */
+
+.gh-pull-cord {
+  position: absolute;
+  left: 37px;
+  top: 0;
+
+  width: 6px;
+  height: calc(100% - 38px);
+
+  border-radius: 0 0 2px 2px;
+
+  background: repeating-linear-gradient(
+    145deg,
+    #a79e7d 0 2px,
+    #746e55 2px 4px,
+    #b2a889 4px 5px,
+    #625e48 5px 7px
+  );
+
+  box-shadow:
+    inset 1px 0 1px #d4c7a03b,
+    1px 1px 3px #000c;
+
+  mask-image: linear-gradient(
+    180deg,
+    transparent,
+    #000 45px
+  );
+
+  transition: filter .3s;
+}
+
+
+/* Rope knot */
+
+.gh-rope-knot {
+  position: absolute;
+  left: 32px;
+  bottom: 18px;
+
+  width: 16px;
+  height: 20px;
+
+  border: 4px solid #8d8569;
+  border-radius: 45% 55% 45% 55%;
+
+  transform: rotate(-12deg);
+
+  box-shadow:
+    inset 1px 0 1px #d0c3a655,
+    1px 1px 3px #0008;
+
+  transition: filter .3s;
+}
+
+.gh-rope-knot::before {
+  content: "";
+
+  position: absolute;
+  left: 0;
+  top: 3px;
+
+  width: 8px;
+  height: 6px;
+
+  border-top: 2px solid #b2a787;
+  border-bottom: 1px solid #574f3c;
+
+  transform: rotate(-27deg);
+}
+
+.gh-rope-knot::after {
+  content: "";
+
+  position: absolute;
+  left: 3px;
+  top: 15px;
+
+  width: 4px;
+  height: 16px;
+
+  border-radius: 0 0 1px 1px;
+
+  background: repeating-linear-gradient(
+    145deg,
+    #a59a7a 0 2px,
+    #6e654f 2px 4px
+  );
+
+  transform: rotate(-11deg);
+  box-shadow: 1px 0 #433d2d;
+}
+
+
+/* Cord hover effects */
+
+.gh-pull-switch:hover .gh-pull-cord,
+.gh-pull-switch:hover .gh-rope-knot,
+.gh-pull-switch:focus-visible .gh-pull-cord,
+.gh-pull-switch:focus-visible .gh-rope-knot {
+  filter: brightness(1.3);
+}
+
+
+/* Cord movement */
+
+@keyframes cord-sway {
+  0%,
+  100% {
+    transform: rotate(-.8deg);
+  }
+
+  50% {
+    transform: rotate(.8deg);
+  }
+}
+
+
+/* =========================================================
+   10. DARK SCREEN HINT
+   ========================================================= */
+
+.gh-dark-hint {
+  position: absolute;
+  left: var(--lamp-x);
+  top: calc(370px * var(--lamp-scale));
+
+  transform: translateX(-50%);
+
+  text-align: center;
+  color: #84938a;
+
+  pointer-events: none;
+  opacity: 1;
+  white-space: nowrap;
+
+  transition: opacity .5s;
+}
+
+.gh-dark-hint small {
+  display: block;
+
+  margin-top: 12px;
+
+  font-family: "PMingLiU", serif;
+  font-size: 11px;
+  letter-spacing: .25em;
+
+  opacity: .65;
+}
+
+.gh-hint-line {
+  display: inline-block;
+
+  width: 1px;
+  height: 25px;
+
+  background: linear-gradient(
+    #9cb8a500,
+    #9cb8a54a
+  );
+}
+
+.is-lit .gh-dark-hint {
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity .5s,
+    visibility 0s .5s;
+}
+
+
+/* Screen reader text */
+
+.gh-sr {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   11. OVERLAY AND DIALOG
+   ========================================================= */
+
+.gh-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px 20px;
+
+  background: #000c;
+  backdrop-filter: blur(12px);
+
+  overflow-y: auto;
+
+  animation: gh-fade .3s ease;
+}
+
+.gh-dialog {
+  position: relative;
+
+  width: min(100%, 520px);
+  max-height: calc(100svh - 60px);
+
+  padding: 45px 44px 28px;
+
+  overflow-y: auto;
+
+  background: linear-gradient(
+    145deg,
+    #111817,
+    #050807
+  );
+
+  border: 1px solid #687b6d42;
+  border-radius: 0;
+
+  color: #d6ddd5;
+
+  box-shadow: 0 30px 100px #000b;
+
+  outline: none;
+}
+
+.gh-close {
+  position: absolute;
+  right: 18px;
+  top: 17px;
+  z-index: 1;
+
+  display: grid;
+  place-items: center;
+
+  padding: 9px;
+  border: 0;
+
+  background: transparent;
+  color: #b3bfb4;
+}
+
+.gh-close:hover {
+  color: #fff;
+}
+
+.gh-dialog h2 {
+  margin: 0 0 30px;
+
+  font-family: "PMingLiU", "Songti TC", serif;
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: .3em;
+}
+
+
+/* =========================================================
+   12. SETTINGS COMPONENTS
+   ========================================================= */
+
+.gh-setting {
+  margin: 0;
+  padding: 24px 0;
+
+  border: 0;
+  border-bottom: 1px solid #a6baac20;
+}
+
+.gh-setting legend {
+  float: left;
+  width: 100%;
+
+  padding: 0;
+
+  font-size: var(--gh-reading);
+  letter-spacing: .12em;
+}
+
+.gh-setting p {
+  margin: 7px 0 18px;
+  clear: both;
+
+  color: #7c8b80;
+
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.gh-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.gh-toggle-row label {
+  font-size: var(--gh-reading);
+  letter-spacing: .12em;
+}
+
+.gh-toggle-row p {
+  margin-bottom: 0;
+}
+
+
+/* Toggle switch */
+
+.gh-toggle {
+  width: 43px;
+  height: 24px;
+  flex-shrink: 0;
+
+  padding: 3px;
+
+  border: 1px solid #8f9e8d70;
+  border-radius: 0;
+
+  background: #000;
+
+  transition: background .2s;
+}
+
+.gh-toggle > span {
+  display: block;
+
+  width: 16px;
+  height: 16px;
+
+  background: #677b6c;
+
+  transition: transform .2s;
+}
+
+.gh-toggle[aria-checked="true"] {
+  background: #a4b69f25;
+}
+
+.gh-toggle[aria-checked="true"] > span {
+  background: #cbd6c3;
+  transform: translateX(18px);
+}
+
+
+/* Display mode control */
+
+.gh-display-control {
+  min-width: 105px;
+
+  padding: 9px 20px;
+
+  border: 1px solid #71866c66;
+
+  background: transparent;
+  color: #c0cfb7;
+
+  font-size: 14px;
+}
+
+
+/* Text size selector */
+
+.gh-segment {
+  display: flex;
+  gap: 12px;
+}
+
+.gh-segment button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-width: 110px;
+  padding: 9px 16px;
+
+  border: 1px solid #9baf9d40;
+  border-radius: 0;
+
+  background: transparent;
+  color: #91a494;
+
+  font-size: 14px;
+}
+
+.gh-segment button[aria-pressed="true"] {
+  background: #c4cfc012;
+  color: #e2ecdf;
+  border-color: #a4b39d;
+}
+
+
+/* Reading sample */
+
+.gh-reading-sample {
+  padding: 14px 18px;
+  margin-top: 26px;
+
+  border-left: 1px solid #7e978575;
+}
+
+.gh-reading-sample small {
+  color: #7b8c7c;
+
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+.gh-reading-sample p {
+  margin: 8px 0 0;
+
+  font-family: "PMingLiU", "Songti TC", serif;
+  font-size: var(--gh-reading);
+  line-height: 1.9;
+}
+
+
+/* Settings notice */
+
+.gh-settings-notice {
+  min-height: 20px;
+  margin: 19px 0;
+
+  color: #7f9583;
+  font-size: 11px;
+}
+
+
+/* Reset settings */
+
+.gh-config-reset {
+  display: block;
+
+  padding: 10px 35px;
+  margin: 32px 0 0 auto;
+
+  border: 1px solid #71866c66;
+
+  background: transparent;
+  color: #aabb9e;
+
+  font-family: "PMingLiU", serif !important;
+  letter-spacing: .12em;
+}
+
+.gh-config-reset:hover {
+  background: #a4bb9015;
+}
+
+
+/* =========================================================
+   13. DIALOG BUTTONS AND TEXT
+   ========================================================= */
+
+.gh-back {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  width: 100%;
+
+  padding: 20px 0 0;
+  margin-top: 25px;
+
+  border: 0;
+  border-top: 1px solid #9fb29c20;
+
+  background: transparent;
+  color: #91a58f;
+
+  font-size: 12px;
+  letter-spacing: .14em;
+}
+
+.gh-back:hover {
+  color: #eef5e6;
+}
+
+.gh-prose {
+  color: #b8c4b5;
+
+  font-family: "PMingLiU", "Songti TC", serif;
+  font-size: var(--gh-reading);
+  line-height: 2.1;
+}
+
+.gh-fine-print {
+  color: #758775;
+
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+.gh-dialog-primary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+
+  padding: 13px 18px;
+  margin-top: 25px;
+
+  border: 1px solid #93a68d;
+  border-radius: 0;
+
+  background: #acbfa313;
+  color: #d8e6d0;
+
+  font-size: 14px;
+  letter-spacing: .15em;
+}
+
+.gh-dialog-primary:hover {
+  background: #a5b89b2b;
+}
+
+.gh-dev-entry {
+  padding: 15px 0;
+
+  border: 0;
+
+  background: transparent;
+  color: #788e79;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   14. SETTINGS FULLSCREEN LAYOUT
+   ========================================================= */
+
+.gh-config {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+
+  padding: 8vh 7vw;
+
+  border: 0;
+
+  background:
+    radial-gradient(
+      ellipse at 85% 100%,
+      #15251d66,
+      transparent 65%
+    ),
+    #020403f5;
+}
+
+.gh-config > h2 {
+  margin-bottom: 7vh;
+
+  font-size: clamp(30px, 3.3vw, 58px);
+  letter-spacing: .38em;
+}
+
+.gh-config .gh-close {
+  right: 4vw;
+  top: 4vh;
+}
+
+.gh-config > .gh-back {
+  position: absolute;
+  bottom: 5vh;
+  left: 7vw;
+
+  width: auto;
+
+  border: 0;
+  color: #8d9e8b;
+}
+
+
+/* Settings layout */
+
+.gh-config-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 7vw;
+
+  max-width: 1250px;
+}
+
+
+/* Settings tabs */
+
+.gh-config-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  padding-right: 32px;
+
+  border-right: 1px solid #768e751f;
+}
+
+.gh-config-tabs button {
+  position: relative;
+
+  padding: 23px 20px;
+
+  border: 0;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+
+  background: transparent;
+  color: #7b8e7c;
+
+  font-family: "PMingLiU", serif;
+  font-size: 21px;
+  letter-spacing: .32em;
+
+  text-align: center;
+}
+
+.gh-config-tabs button[aria-selected="true"] {
+  color: #dde7d7;
+
+  border-image: linear-gradient(
+    90deg,
+    transparent,
+    #829a76,
+    transparent
+  ) 1;
+
+  background: radial-gradient(
+    ellipse at 50% 80%,
+    #a5c08812,
+    transparent 75%
+  );
+
+  text-shadow: 0 0 20px #c1e1af55;
+}
+
+.gh-config-tabs button:hover {
+  color: #e2eadd;
+}
+
+
+/* Settings content */
+
+.gh-config-body {
+  max-width: 760px;
+  min-height: 330px;
+}
+
+.gh-config-body .gh-setting:first-child {
+  padding-top: 13px;
+}
+
+
+/* Help rows */
+
+.gh-help-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+
+  padding: 24px 0;
+
+  border-bottom: 1px solid #9fb29c20;
+
+  color: #adbeaa;
+
+  font-family: "PMingLiU", serif;
+  font-size: var(--gh-reading);
+  letter-spacing: .12em;
+}
+
+.gh-help-row span:last-child {
+  color: #748974;
+
+  font-size: 14px;
+  letter-spacing: .05em;
+}
+
+
+/* Settings overlay */
+
+.gh-settings-layer {
+  padding: 0;
+
+  background: #000a;
+  backdrop-filter: blur(20px);
+}
+
+
+/* =========================================================
+   15. GENERAL ANIMATIONS
+   ========================================================= */
+
+@keyframes gh-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+/* =========================================================
+   16. RESPONSIVE: LARGE SCREENS
+   ========================================================= */
+
+@media (min-width: 1800px) {
+  .gh-main {
+    left: 17%;
+    width: 490px;
+  }
+
+  .gh-skull {
+    right: 1%;
+    width: 48vw;
+  }
+}
+
+
+/* =========================================================
+   17. RESPONSIVE: SHORT SCREENS
+   ========================================================= */
+
+@media (max-height: 740px) and (min-width: 701px) {
+  .gh-title {
+    --lamp-scale: .8;
+  }
+
+  .gh-main {
+    top: 23%;
+    left: 12%;
+    width: 360px;
+  }
+
+  .gh-main h1 {
+    margin-bottom: 32px;
+    font-size: 70px;
+  }
+
+  .gh-menu {
+    gap: 4px;
+    grid-auto-rows: 46px;
+  }
+
+  .gh-menu-item {
+    min-height: 41px;
+    font-size: 18px;
+  }
+
+  .gh-lamp {
+    transform: translateX(-50%) scale(.8);
+    transform-origin: top;
+  }
+
+  .gh-config {
+    padding-top: 5vh;
+  }
+
+  .gh-config > h2 {
+    margin-bottom: 3vh;
+  }
+
+  .gh-config .gh-setting {
+    padding: 15px 0;
+  }
+
+  .gh-config-reset {
+    margin-top: 20px;
+  }
+}
+
+
+/* =========================================================
+   18. RESPONSIVE: TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .gh-main {
+    left: 7%;
+    width: 380px;
+  }
+
+  .gh-main h1 {
+    font-size: 75px;
+  }
+
+  .gh-skull {
+    right: -5%;
+    bottom: 0;
+
+    width: 60vw;
+    opacity: .75;
+  }
+
+  .gh-config-layout {
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 5vw;
+  }
+
+  .gh-config-tabs {
+    padding-right: 20px;
+  }
+
+  .gh-config-tabs button {
+    font-size: 18px;
+  }
+}
+
+
+/* =========================================================
+   19. RESPONSIVE: MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .gh-title {
+    --lamp-scale: .6;
+    --lamp-x: 73%;
+
+    height: 100svh;
+    min-height: 620px;
+  }
+  
+  .gh-skull img {
+  max-height: 46%;
+  }
+
+  /* Main menu */
+
+  .gh-main {
+    top: 28%;
+    left: 8%;
+    width: 84%;
+
+    text-align: left;
+  }
+
+  .gh-main h1 {
+    margin-bottom: 40px;
+
+    font-size: clamp(45px, 11vw, 70px);
+    letter-spacing: .22em;
+  }
+
+  .gh-menu {
+    width: 220px;
+    gap: 6px;
+    grid-auto-rows: 52px;
+  }
+
+  .gh-menu-item {
+    min-width: 210px;
+    min-height: 44px;
+    font-size: var(--gh-menu);
+  }
+
+
+  /* Lamp */
+
+  .gh-lamp {
+    left: 73%;
+
+    transform: translateX(-50%) scale(.6);
+    transform-origin: top;
+  }
+
+  .gh-dark-hint small {
+    font-size: 9px;
+  }
+
+
+  /* Skull */
+
+  .gh-skull {
+    right: -10%;
+    bottom: -3%;
+
+    width: 64vw;
+    max-height: 46%;
+
+    opacity: .53;
+
+    mask-image: linear-gradient(
+      0deg,
+      transparent,
+      black 20%,
+      black 70%,
+      transparent
+    );
+  }
+
+
+  /* Background shade */
+
+  .gh-scene-shade {
+    background: linear-gradient(
+      90deg,
+      #000d,
+      #0009 65%,
+      #0008
+    );
+  }
+
+
+  /* Dialog */
+
+  .gh-dialog {
+    padding: 40px 24px 25px;
+    max-height: calc(100svh - 32px);
+  }
+
+  .gh-overlay {
+    padding: 16px;
+  }
+
+  .gh-dialog h2 {
+    font-size: 27px;
+  }
+
+  .gh-toggle-row {
+    gap: 10px;
+  }
+
+  .gh-setting p {
+    font-size: 11px;
+  }
+
+
+  /* Settings */
+
+  .gh-settings-layer {
+    padding: 0;
+  }
+
+  .gh-config {
+    padding: 40px 7vw 90px;
+
+    max-height: none;
+    min-height: 100%;
+    height: auto;
+
+    align-self: stretch;
+  }
+
+  .gh-config > h2 {
+    margin-bottom: 30px;
+    font-size: 30px;
+  }
+
+  .gh-config-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .gh-config-tabs {
+    flex-direction: row;
+    gap: 5px;
+
+    padding: 0;
+
+    border-right: 0;
+    border-bottom: 1px solid #768e7533;
+  }
+
+  .gh-config-tabs button {
+    flex: 1;
+
+    padding: 15px 3px;
+
+    font-size: 16px;
+    letter-spacing: .15em;
+  }
+
+  .gh-config-body {
+    min-height: 270px;
+  }
+
+  .gh-config-reset {
+    margin-top: 22px;
+  }
+
+  .gh-config .gh-close {
+    top: 25px;
+    right: 20px;
+  }
+
+  .gh-config > .gh-back {
+    bottom: 30px;
+  }
+
+
+  /* Help and text selector */
+
+  .gh-help-row {
+    font-size: 14px;
+    letter-spacing: .05em;
+  }
+
+  .gh-help-row span:last-child {
+    font-size: 12px;
+  }
+
+  .gh-segment button {
+    min-width: 100px;
+  }
+}
+
+
+/* =========================================================
+   20. REDUCED MOTION ACCESSIBILITY
+   ========================================================= */
+
+/* Browser-level reduced motion preference */
+
+@media (prefers-reduced-motion: reduce) {
+  .gh-reveal,
+  .gh-emerge,
+  .gh-lamp-bulb,
+  .gh-lamp-halo,
+  .gh-dark-hint,
+  .gh-pull-cord,
+  .gh-rope-knot {
+    transition-duration: .01ms !important;
+    transition-delay: 0s !important;
+  }
+
+  .gh-pull-switch,
+  .gh-skull,
+  .gh-overlay,
+  .gh-lamp-bulb,
+  .gh-lamp-halo {
+    animation: none !important;
+  }
+
+  .gh-title button {
+    transition: none !important;
+  }
+}
+
+
+/* In-game reduced motion setting */
+
+.reduce-motion .gh-reveal,
+.reduce-motion .gh-emerge,
+.reduce-motion .gh-lamp-bulb,
+.reduce-motion .gh-lamp-halo,
+.reduce-motion .gh-dark-hint,
+.reduce-motion .gh-pull-cord,
+.reduce-motion .gh-rope-knot {
+  transition-duration: .01ms !important;
+  transition-delay: 0s !important;
+}
+
+.reduce-motion .gh-pull-switch,
+.reduce-motion .gh-skull,
+.reduce-motion .gh-overlay,
+.reduce-motion .gh-lamp-bulb,
+.reduce-motion .gh-lamp-halo {
+  animation: none !important;
+}
+
+.reduce-motion .gh-title button {
+  transition: none !important;
+}
+/* =========================================================
+   SKULL INTERACTION
+   ========================================================= */
+
+.gh-title .gh-skull {
+  display: block;
+  padding: 0;
+  border: none;
+  background: transparent;
+
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.gh-skull img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom right;
+  pointer-events: none;
+}
+
+.gh-title .gh-skull:hover {
+  filter: brightness(1.15) saturate(.65) contrast(1.1);
+}
+
+.gh-title .gh-skull:focus-visible {
+  outline: 1px solid #bbd2c4;
+  outline-offset: 5px;
+}
+
+/* Dialogue box */
+.gh-skull-dialogue {
+  position: absolute;
+  z-index: 5;
+  right: 8%;
+  top: 12%;
+  width: min(32vw, 380px);
+  min-width: 220px;
+
+  padding: 22px 35px;
+
+  background: rgba(20, 25, 22, 0.55);
+  backdrop-filter: blur(15px) saturate(35%);
+  -webkit-backdrop-filter: blur(15px) saturate(35%);
+
+  border: 1px solid rgba(190, 200, 185, 0.18);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+  transition:
+    opacity 1.5s ease,
+    transform 1.5s ease;
+
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.gh-skull-dialogue.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.gh-skull-dialogue.is-hidden {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.gh-skull-dialogue p {
+  margin: 0;
+
+  color: #d5dfd3;
+  font-family: "PMingLiU", "Songti TC", serif;
+  font-size: 18px;
+  line-height: 1.9;
+  letter-spacing: .12em;
+
+  text-align: center;
+}
+
+.gh-skull-dialogue-close {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+
+  border: 0;
+  background: transparent;
+  color: #aab9a9;
+
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.gh-skull-dialogue-close:hover {
+  color: white;
+}
+
+@keyframes gh-dialogue-appear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

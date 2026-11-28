@@ -50,3 +50,12 @@
 - **遇到的問題／處理方式**：
 - **相關 Issue / PR**：
 - **下一步**：
+
+### **2026-11-23｜完成 Greenhouse 遊戲標題畫面（Title Screen）**
+- **負責人**：黃東友
+- **完成內容**：新增 `greenhouse` 資料夾，完成遊戲標題畫面（Title Screen）的初步設計與實作，並調整及修改部分 `App.jsx` 與 `styles.css` 程式碼，以整合及改善前端介面。
+- **遇到的問題／處理方式**：
+  1. `frontend/public/assets/backgrounds` 中的圖片素材無法透過 `TitleScreen.jsx` 原本的 `import` 方式正常載入。改以 `<img>` 標籤搭配圖片路徑引用素材，解決圖片載入問題。
+  2. `test-skull.png` 無法正常作為按鈕使用。透過在 `TitleScreen.jsx` 中加入按鈕相關程式碼，並搭配 `title-screen.css` 設定按鈕樣式及功能，完成按鈕的整合。
+- **相關 Issue / PR**：圖片素材著作權問題。標題畫面使用的部分素材主要是透過 Photoshop 或 Photopea 修改其他創作者的原始作品而製作，後續需進一步確認素材使用權及著作權相關規範。
+- **下一步**：後續將再討論開發方向，可能包括建立圖片素材的 Credits／來源標註機制，以降低著作權風險，或進一步開發遊戲內部場景（Scenes）的介面與功能。
